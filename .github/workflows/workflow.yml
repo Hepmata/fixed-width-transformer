@@ -6,11 +6,23 @@ jobs:
     container: python:3.9.6-slim-buster
     steps:
       - uses: actions/checkout@v2
-      - run: |
+      - name: Install Dependencies
+        run: |
           pip3 install -r requirements.txt
           pip3 install -r tests/requirements.txt
-      - run: python -m pytest --junitxml=junit.xml --cov-config .coveragerc --cov-report html --cov-report xml --cov=src tests/unit
+      - name: Run Unit Test
+        run: pytest --cov-config .coveragerc --cov-report xml --cov=./ tests/unit
+      - name: Codecov Upload
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
+          files: coverage.xml
+          directory: ./coverage/reports/
+          path_to_write_report: ./coverage/codecov_report.txt
+          env_vars: OS,PYTHON
+          fail_ci_if_error: true
   deploy-pypi:
+    needs: unit-test
     runs-on: ubuntu-latest
     container: python:3.9.6-slim-buster
     steps:
