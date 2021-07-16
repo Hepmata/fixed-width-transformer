@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     container: python:3.9.6-slim-buster
     steps:
-      - use actions/checkout@v2
+      - uses: actions/checkout@v2
       - run: |
           pip3 install -r requirements.txt
           python3 -m pip install --upgrade build 
