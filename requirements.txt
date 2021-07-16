@@ -1,0 +1,8 @@
+requests
+jsonpickle
+boto3~=1.17.94
+botocore~=1.20.94
+simplejson
+pandas==1.2.4
+pyyaml==5.4.1
+kafka-python
