@@ -24,6 +24,7 @@ jobs:
           path_to_write_report: ./coverage/codecov_report.txt
           env_vars: OS,PYTHON
           fail_ci_if_error: true
+      
   deploy-pypi:
     needs: unit-test
     runs-on: ubuntu-latest
