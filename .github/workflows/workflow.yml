@@ -2,8 +2,8 @@ name: workflow
 on: [push]
 jobs:
   unit-test:
-    runs-on: 'docker'
-    image: '3.9.6-slim-buster'
+    runs-on: ubuntu-latest
+    container: python:3.9.6-slim-buster
     steps:
       - uses: actions/checkout@v2
       - run: |
