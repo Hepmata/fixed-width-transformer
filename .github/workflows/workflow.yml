@@ -3,9 +3,12 @@ on: [push]
 jobs:
   unit-test:
     runs-on: ubuntu-latest
-    container: python:3.9.6-slim-buster
     steps:
       - uses: actions/checkout@v2
+      - name: Setup Python
+      uses: actions/setup-python@master
+      with:
+        python-version: 3.9
       - name: Install Dependencies
         run: |
           pip3 install -r requirements.txt
