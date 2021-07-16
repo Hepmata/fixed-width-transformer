@@ -10,3 +10,15 @@ jobs:
           pip3 install -r requirements.txt
           pip3 install -r tests/requirements.txt
       - run: python -m pytest --junitxml=junit.xml --cov-config .coveragerc --cov-report html --cov-report xml --cov=src tests/unit
+  deploy-pypi:
+    runs-on: ubuntu-latest
+    container: python:3.9.6-slim-buster
+    steps:
+      - use actions/checkout@v2
+      - run: |
+        pip3 install -r requirements.txt
+        python3 -m pip install --upgrade build 
+        python3 -m pip install --upgrade twine
+      - run: |
+        python3 -m build
+        python3 -m twine upload -u __token__ -p ${{secrets.PYPI_TOKEN}} --repository fixedwidth-transformer --repository-url https://upload.pypi.org/legacy/ dist/*

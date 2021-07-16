@@ -49,7 +49,6 @@ class AbstractValidator:
 
 
 class NricValidator(AbstractValidator):
-
     def validate(self, frame) -> dict:
         matched = self.frame[self.frame.str.match(r'(?i)^[STFG]\d{7}[A-Z]$')]
         if matched.size == self.frame.size:
