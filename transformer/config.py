@@ -15,28 +15,36 @@ class ExecutorConfig:
     _config = dict
     _exact_config = dict
 
-    def __init__(self, key: str):
+    def __init__(self, key: str, local=None, inline=None):
         try:
-            self._config = self._retrieve_config()
+            self._config = self._retrieve_config(local, inline)
             self._set_exact_config(key)
         except Exception as e:
             print(e)
             raise e
 
-    def _retrieve_config(self):
-        if os.environ['config_type'] == "external":
+    def _retrieve_config(self, local=None, inline=None) -> dict:
+        if inline:
+            return yaml.safe_load(inline)
+        if local is None:
+            # To retrieve config using environment variables
+            if os.environ['config_type'] == "local":
+                env_config = common.check_environment_variables(["config_name"])
+                log.info(f"Using Local Configuration file [{env_config[0]}]")
+                with open(env_config[0], 'r') as file:
+                    return yaml.safe_load(file)
+
+            # Retrieve S3 remote config
             required_configs = ["config_external_bucket", "config_name"]
             env_config = common.check_environment_variables(required_configs)
             log.info(f"Using External Configuration file from S3 bucket [{env_config[0]}] with key [{env_config[1]}")
-            return yaml.load(
-                aws_service.download_s3_as_bytes(env_config[0], env_config[1]).read(),
-                Loader=yaml.FullLoader
+            return yaml.safe_load(
+                aws_service.download_s3_as_bytes(env_config[0], env_config[1]).read()
             )
         else:
-            env_config = common.check_environment_variables(["config_name"])
-            log.info(f"Using Local Configuration file [{env_config[0]}]")
-            with open(env_config[0], 'r') as file:
-                return yaml.load(file, Loader=yaml.FullLoader)
+            log.info(f"Using Local Configuration file [{local}]")
+            with open(local, 'r') as file:
+                return yaml.safe_load(file)
 
     def _set_exact_config(self, key):
         for k in self._config['files']:
