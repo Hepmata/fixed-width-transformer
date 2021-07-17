@@ -2,6 +2,8 @@ name: Feature Branch Workflow
 on:
   push:
     branches:
+      - 'bug/**'
+      - 'bugfix/**'
       - 'feature/**'
   pull_request:
     branches:
