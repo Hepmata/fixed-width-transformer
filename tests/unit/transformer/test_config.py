@@ -8,6 +8,7 @@ import library.exceptions as exceptions
 
 from transformer.config import ExecutorConfig
 
+
 class TestExecutorConfig:
     shared_good_key = "somefile.txt"
     shared_good_config = """
@@ -48,7 +49,20 @@ class TestExecutorConfig:
         os.remove(config_file)
         assert config.get_exact_config()
         assert config.get_config()
-    
+
+    def test_executor_config_local(self, mocker):
+        config_file = "config_{}.yaml".format(uuid.uuid4().__str__())
+        print(os.path.abspath(config_file))
+        mocker.patch.dict(os.environ, {"config_type": "local"})
+        mocker.patch.dict(os.environ, {"config_name": config_file})
+        config_text = yaml.load(self.shared_good_config)
+        with open(config_file, 'w') as f:
+            yaml.safe_dump(config_text, f)
+        config = ExecutorConfig(key=self.shared_good_key)
+        assert config.get_exact_config()
+        assert config.get_config()
+        os.remove(config_file)
+
     def test_executor_config_remote(self, mocker):
         mocker.patch.dict(os.environ, {"config_type": "external"})
         mocker.patch.dict(os.environ, {"config_bucket": "somebucket"})
@@ -65,7 +79,7 @@ class TestExecutorConfig:
     def test_executor_cfg_invalid_inline(self):
         with pytest.raises(exceptions.InvalidConfigError):
             ExecutorConfig(key=self.shared_good_key, inline="rubbish")
-    
+
     def test_executor_cfg_no_matching_key(self):
         bad_config = """
         files:
