@@ -1,0 +1,51 @@
+name: Master Branch Workflow
+on: 
+  push:
+    branches:
+      - master
+      - main
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@master
+        with:
+          python-version: 3.9
+      - name: Install Dependencies
+        run: |
+          pip3 install -r requirements.txt
+          pip3 install -r tests/requirements.txt
+      - name: Run Unit Test
+        run: pytest --cov-config .coveragerc --cov-report xml --cov=./ tests/unit
+      - name: Codecov Upload
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
+          files: coverage.xml
+          directory: ./coverage/reports/
+          path_to_write_report: ./coverage/codecov_report.txt
+          env_vars: OS,PYTHON
+          fail_ci_if_error: true
+      - name: Coveralls Upload
+        uses: AndreMiras/coveralls-python-action@develop
+      
+  deploy-pypi:
+    needs: unit-test
+    runs-on: ubuntu-latest
+    container: python:3.9.6-slim-buster
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: |
+          pip3 install -r requirements.txt
+          python3 -m pip install --upgrade build 
+          python3 -m pip install --upgrade twine
+      - name: Generate Version
+        run: |
+          version=0.0.1-$(date +%s)
+      - name: Build and Deploy
+        run: |
+          python3 -m build -V ${version}
+          python3 -m twine upload -u __token__ -p ${{secrets.PYPI_TOKEN}} --repository fixedwidth-transformer --repository-url https://upload.pypi.org/legacy/ dist/*

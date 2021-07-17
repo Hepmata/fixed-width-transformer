@@ -1,5 +1,6 @@
 [![codecov](https://codecov.io/gh/SimpleConstructs/fixed-width-transformer/branch/master/graph/badge.svg?token=NP0R3Y98E1)](https://codecov.io/gh/SimpleConstructs/fixed-width-transformer)
-[![codecov](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://github.com/SimpleConstructs/fixed-width-transformer/blob/master/LICENSE)
+[![coveralls](https://coveralls.io/repos/github/SimpleConstructs/fixed-width-transformer/badge.svg)](https://coveralls.io/github/SimpleConstructs/fixed-width-transformer)
+[![license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://github.com/SimpleConstructs/fixed-width-transformer/blob/master/LICENSE)
 # FixedWidth Transformer
 Ever wanted to transform non-standard FixedWidth files from legacy systems to something modern?
 
