@@ -24,6 +24,8 @@ jobs:
           path_to_write_report: ./coverage/codecov_report.txt
           env_vars: OS,PYTHON
           fail_ci_if_error: true
+      - name: Coveralls Upload
+        uses: AndreMiras/coveralls-python-action@develop
       
   deploy-pypi:
     needs: unit-test

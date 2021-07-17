@@ -1,2 +1,5 @@
 [run]
-omit = */__init__.py
+omit = 
+    */__init__.py
+    tests/*
+relative_files = True
