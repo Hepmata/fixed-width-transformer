@@ -25,28 +25,45 @@ class ExecutorConfig:
 
     def _retrieve_config(self, local=None, inline=None) -> dict:
         if inline:
-            return yaml.safe_load(inline)
+            cfg = yaml.safe_load(inline)
+            if isinstance(cfg, dict):
+                return cfg
+            raise exceptions.InvalidConfigError()
         if local is None:
             # To retrieve config using environment variables
             if os.environ['config_type'] == "local":
                 env_config = common.check_environment_variables(["config_name"])
                 log.info(f"Using Local Configuration file [{env_config[0]}]")
                 with open(env_config[0], 'r') as file:
-                    return yaml.safe_load(file)
+                    cfg = yaml.safe_load(file)
+                    if isinstance(cfg, dict):
+                        return cfg
+                    raise exceptions.InvalidConfigError()
 
             # Retrieve S3 remote config
-            required_configs = ["config_external_bucket", "config_name"]
+            required_configs = ["config_bucket", "config_name"]
             env_config = common.check_environment_variables(required_configs)
             log.info(f"Using External Configuration file from S3 bucket [{env_config[0]}] with key [{env_config[1]}")
-            return yaml.safe_load(
+            cfg = yaml.safe_load(
                 aws_service.download_s3_as_bytes(env_config[0], env_config[1]).read()
             )
+            if isinstance(cfg, dict):
+                return cfg
+            raise exceptions.InvalidConfigError()
         else:
             log.info(f"Using Local Configuration file [{local}]")
-            with open(local, 'r') as file:
-                return yaml.safe_load(file)
+            try:
+                with open(local, 'r') as file:
+                    cfg = yaml.safe_load(file)
+                    if isinstance(cfg, dict):
+                        return cfg
+                    raise
+            except FileNotFoundError as e:
+                raise exceptions.MissingConfigError(e)
 
     def _set_exact_config(self, key):
+        if self._config['files'] is None:
+            raise exceptions.InvalidConfigError()
         for k in self._config['files']:
             pattern = self._config['files'][k]['pattern']
             if re.match(pattern, key):

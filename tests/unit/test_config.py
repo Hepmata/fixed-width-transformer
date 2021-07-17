@@ -1,7 +1,10 @@
+import io
 import os
 import uuid
-
+from library import aws_service
+import pytest
 import yaml
+import library.exceptions as exceptions
 
 from transformer.config import ExecutorConfig
 
@@ -45,3 +48,36 @@ class TestExecutorConfig:
         os.remove(config_file)
         assert config.get_exact_config()
         assert config.get_config()
+    
+    def test_executor_config_remote(self, mocker):
+        mocker.patch.dict(os.environ, {"config_type": "external"})
+        mocker.patch.dict(os.environ, {"config_bucket": "somebucket"})
+        mocker.patch.dict(os.environ, {"config_name": "somekey"})
+        mocker.patch("library.aws_service.download_s3_as_bytes", return_value=io.StringIO(self.shared_good_config))
+        config = ExecutorConfig(key=self.shared_good_key)
+        assert config.get_exact_config()
+        assert config.get_config()
+
+    def test_executor_cfg_invalid_local(self):
+        with pytest.raises(exceptions.MissingConfigError):
+            ExecutorConfig(key=self.shared_good_key, local="rubbish.file")
+
+    def test_executor_cfg_invalid_inline(self):
+        with pytest.raises(exceptions.InvalidConfigError):
+            ExecutorConfig(key=self.shared_good_key, inline="rubbish")
+    
+    def test_executor_cfg_no_matching_key(self):
+        bad_config = """
+        files:
+            somekey:
+                pattern: ^\d+$
+        """
+        with pytest.raises(exceptions.MissingConfigError):
+            ExecutorConfig(key=self.shared_good_key, inline=bad_config)
+
+    def test_executor_cfg_no_keys(self):
+        bad_config = """
+        files:
+        """
+        with pytest.raises(exceptions.InvalidConfigError):
+            ExecutorConfig(key=self.shared_good_key, inline=bad_config)
