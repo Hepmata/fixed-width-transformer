@@ -89,11 +89,13 @@ class ResultMapperConfig:
 
     def set_result_config(self, config):
         # TODO: Enhance if need to formalize the config in a better flow.
-        print(config)
-        if 'format' in config['output']:
-            self._result_config = config['output']['format']
-        else:
-            self._result_config = {}
+        try:
+            if 'format' in config['output']:
+                self._result_config = config['output']['format']
+            else:
+                self._result_config = {}
+        except KeyError as e:
+            raise exceptions.InvalidConfigError(e)
 
     def get_result_config(self):
         return self._result_config
@@ -101,24 +103,29 @@ class ResultMapperConfig:
 
 @dataclasses.dataclass
 class SourceMapperConfig:
-    _validations: [dict]
+    _validations: dict
     _mappers = [source_mapper.AbstractDataMapper]
 
     def __init__(self, config: ExecutorConfig):
         self.set_mappers(config.get_exact_config())
-        pass
+        self.set_validations(config.get_exact_config())
 
-    def set_mappers(self, config: dict, file_format="fileFormat"):
+    def set_mappers(self, config: dict, file_format="source"):
         mapping = {}
         mappers = []
+        if file_format in config.keys():
+            if config[file_format] is None:
+                raise exceptions.InvalidConfigError(f"{file_format} segment cannot be empty")
+        else:
+            raise exceptions.InvalidConfigError(f"{file_format} segment is missing in configuration")
         for segment in config[file_format]:
-            name = []
+            names = []
             specs = []
             for field in config[file_format][segment]['format']:
-                name.append(field['name'])
+                names.append(field['name'])
                 specs.append(self._converter(field['spec']))
             mapping[segment] = {
-                'names': name,
+                'names': names,
                 'specs': specs
             }
             mappers.append(getattr(source_mapper, config[file_format][segment]['mapper'])(mapping[segment]))
@@ -133,11 +140,19 @@ class SourceMapperConfig:
         splits = data.split(',')
         return tuple([int(splits[0].strip()), int(splits[1].strip())])
 
-    def set_validations(self):
-        pass
+    def set_validations(self, config):
+        validators = {}
+        for segment in config['source']:
+            segment_validators = []
+            for field in config['source'][segment]['format']:
+                if 'validators' in field.keys():
+                    segment_validators.append(field['validators'])
+            if len(segment_validators) > 0:
+                validators[segment] = segment_validators
+        self._validations = validators
 
     def get_validations(self):
-        pass
+        return self._validations
 
     def get_mappers(self):
         return self._mappers

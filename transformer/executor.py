@@ -2,7 +2,7 @@ import os
 
 from transformer import config, result
 import transformer.response as rsp
-from transformer.result_mapper import JsonArrayResultMapper, SourceArrayResultMapper
+from transformer.result_mapper import JsonArrayResultMapper, DefaultArrayResultMapper
 from library import aws_service, logger
 
 log = logger.set_logger(__name__)
@@ -33,7 +33,7 @@ class LambdaFixedWidthExecutor(AbstractExecutor):
         if result_mapper_config.get_result_config():
             result_mapper = JsonArrayResultMapper(result_mapper_config)
         else:
-            result_mapper = SourceArrayResultMapper(result_mapper_config)
+            result_mapper = DefaultArrayResultMapper(result_mapper_config)
         result_data = result_mapper.run(source_dfs)
         # Run Result
         result_config = config.ResultConfig(cls)
