@@ -159,3 +159,43 @@ class TestNanValidator:
         )
         with pytest.raises(ValidationError):
             validator.NanValidator(config).validate(dataframes)
+
+
+class TestRefValidator:
+    def test_success_count(self):
+        dataframes = {
+            "body": pd.DataFrame({
+                "field1": [1,2,3,4,5]
+            }),
+            "footer": pd.DataFrame({
+                "recordCount": [5]
+            })
+        }
+        config = ValidatorConfig(
+            "body",
+            "field1",
+            arguments={
+                "type": "count",
+                "ref": "footer.recordCount"
+            }
+        )
+        validator.RefValidator(config).validate(dataframes)
+
+    def test_success_count_reverse(self):
+        dataframes = {
+            "body": pd.DataFrame({
+                "field1": [1,2,3,4,5]
+            }),
+            "footer": pd.DataFrame({
+                "recordCount": [5]
+            })
+        }
+        config = ValidatorConfig(
+            "footer",
+            "recordCount",
+            arguments={
+                "type": "count",
+                "ref": "body.field1"
+            }
+        )
+        validator.RefValidator(config).validate(dataframes)

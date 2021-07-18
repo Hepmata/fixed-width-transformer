@@ -1,6 +1,7 @@
 import pandas as pd
 from transformer.config import ValidatorConfig
-from transformer.library import logger, exceptions
+from transformer.library import logger
+from transformer.library.exceptions import ValidationError
 import sys
 
 log = logger.set_logger(__name__)
@@ -57,7 +58,7 @@ class NricValidator(AbstractValidator):
 
         matched = target_series[target_series.str.count(r'(?i)^[STFG]\d{7}[A-Z]$') == True]
         if len(matched.index) != len(target_series.index):
-            raise exceptions.ValidationError(
+            raise ValidationError(
                 "Validation Failed",
                 self.config.segment,
                 self.config.field_name,
@@ -113,7 +114,7 @@ class NanValidator(AbstractValidator):
         else:
             result = target_frame[self.config.field_name].isnull().values.any()
         if result:
-            raise exceptions.ValidationError(
+            raise ValidationError(
                 "Failed NaN Validation. Please check file and source config.",
                 self.config.segment,
                 self.config.field_name,
@@ -122,71 +123,68 @@ class NanValidator(AbstractValidator):
             )
 
 
-
 class RefValidator(AbstractValidator):
-    frames: dict
-    config: dict
+    def __init__(self, config: ValidatorConfig):
+        super().__init__(config)
 
-    def __init__(self, config):
-        self.config = config
-        super().__init__()
-
-    def validate(self, frame) -> dict:
-        if self.config['type'] == "match":
+    def validate(self, frames: dict):
+        if self.config.arguments['type'] == "match":
             splits = self.config['ref'].split('.')
-            target = self.frames[splits[0]][splits[1]]
-            source = self.frames[self.config['segment']][self.config['key']]
+            target = frames[splits[0]][splits[1]]
+            source = frames[self.config.segment][self.config.field_name]
             if len(target) > 1 and len(source) > 1:
-                if target.equals(source):
-                    return {
-                        'result': True,
-                        'count': target.value_counts().loc[True]
-                    }
-                return {
-                    'result': False,
-                    'count': target.value_counts().loc[False],
-                }
+                if not target.equals(source):
+                    raise ValidationError(
+                        "Failed RefValidation",
+                        self.config.segment,
+                        self.config.field_name,
+                        target.value_counts().loc[False],
+                        len(target.index)
+                    )
             elif len(target) == 1 and len(source) > 1:
                 data = source == target[0]
-                if False not in data:
-                    return {
-                        'result': True,
-                        'count': source.value_counts().loc[True]
-                    }
-                return {
-                    'result': False,
-                    'count': target.value_counts().loc[False],
-                }
+                if False in data:
+                    raise ValidationError(
+                        "Failed RefValidation",
+                        self.config.segment,
+                        self.config.field_name,
+                        target.value_counts().loc[False],
+                        len(target.index)
+                    )
             elif len(target) > 1 and len(source) == 1:
                 data = target == source[0]
-                if False not in data:
-                    return {
-                        'result': True,
-                        'count': target.sum().count()
-                    }
-                return {
-                    'result': False,
-                    'count': target[target == False].count()
-                }
+                if False in data:
+                    raise ValidationError(
+                        "Failed RefValidation",
+                        self.config.segment,
+                        self.config.field_name,
+                        target[target == False].count(),
+                        len(target.index)
+                    )
             else:
-                if int(target[0]) == int(source[0]):
-                    return {
-                        'result': True,
-                        'count': source.value_counts().loc[True]
-                    }
-                return {
-                    'result': False,
-                    'count': source.value_counts().loc[False],
-                }
-        if self.config['type'] == "count":
-            target_count = len(self.frames[self.config['ref']])
-            expected_count = self.frames[self.config['segment']]['recordCount'][0]
-            if int(target_count) == int(expected_count):
-                return {
-                    'result': True,
-                    'count': int(expected_count)
-                }
-            return {
-                'result': False,
-                'count': int(target_count)
-            }
+                if int(target[0]) != int(source[0]):
+                    raise ValidationError(
+                        "Failed RefValidation",
+                        self.config.segment,
+                        self.config.field_name,
+                        source.value_counts().loc[False],
+                        len(source.index)
+                    )
+
+        if self.config.arguments['type'] == "count":
+            splits = self.config.arguments['ref'].split('.')
+            target_count = len(frames[self.config.segment][self.config.field_name].index)
+            if target_count == 1:
+                # Reversed Flow
+                target_count = len(frames[splits[0]][splits[1]].index)
+                expected_count = frames[self.config.segment][self.config.field_name][0]
+            else:
+                expected_count = frames[splits[0]][splits[1]][0]
+            if int(target_count) != int(expected_count):
+                raise ValidationError(
+                    "Failed RefValidation",
+                    self.config.segment,
+                    self.config.field_name,
+                    int(target_count),
+                    int(expected_count)
+                )

@@ -7,7 +7,10 @@ df = pd.DataFrame({
 df1 = pd.DataFrame({
     "field": ["asda", "asdasd", "asdasd"]
 })
-
+t = pd.DataFrame({
+    "test": [1]
+})
 
 print(df.isnull().values.any())
 print(df1.isnull().values.any())
+print(type(t['test'][0]))
