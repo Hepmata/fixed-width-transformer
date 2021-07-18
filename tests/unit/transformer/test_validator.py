@@ -1,5 +1,7 @@
 import uuid
 from unittest.mock import MagicMock
+
+import numpy as np
 import pytest
 from transformer.config import ValidatorConfig
 from transformer.library.exceptions import ValidationError
@@ -108,3 +110,52 @@ class TestNricValidator:
         )
         with pytest.raises(ValidationError):
             validator.NricValidator(config).validate(dfs)
+
+
+class TestNanValidator:
+
+    @pytest.fixture
+    def dataframes(self):
+        return {
+            "body": pd.DataFrame({
+                "field": ["1", "asdasd", "asdasd"]
+            })
+        }
+
+    def test_success_all(self, dataframes):
+        config = ValidatorConfig(
+            "body",
+            "ALL"
+        )
+        validator.NanValidator(config).validate(dataframes)
+
+    def test_success_field(self, dataframes):
+        config = ValidatorConfig(
+            "body",
+            "field"
+        )
+        validator.NanValidator(config).validate(dataframes)
+
+    def test_failure_all(self, dataframes):
+        dataframes['body'] = pd.DataFrame({
+            "field": ["1", np.NAN, "asdasd"],
+            "field2": [1, 2, 3]
+        })
+        config = ValidatorConfig(
+            "body",
+            "ALL"
+        )
+        with pytest.raises(ValidationError):
+            validator.NanValidator(config).validate(dataframes)
+
+    def test_failure_field(self, dataframes):
+        dataframes['body'] = pd.DataFrame({
+            "field": ["1", np.NAN, "asdasd"],
+            "field2": [1, 2, 3]
+        })
+        config = ValidatorConfig(
+            "body",
+            "field"
+        )
+        with pytest.raises(ValidationError):
+            validator.NanValidator(config).validate(dataframes)

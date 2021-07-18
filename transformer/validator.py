@@ -5,7 +5,7 @@ import sys
 
 log = logger.set_logger(__name__)
 module = sys.modules[__name__]
-# 
+
 # def validate_records(validation_config, frames):
 #     failed_validation = []
 #     for key in validation_config.keys():
@@ -83,16 +83,13 @@ class RegexValidator(AbstractValidator):
     Returns True if regex matches
     Returns False if regex does not match
     """
-    frame: pd.Series
-    pattern: str
 
-    def __init__(self, pattern):
-        self.pattern = pattern
-        super().__init__()
+    def __init__(self, config: ValidatorConfig):
+        super().__init__(config)
 
     def validate(self, frame) -> dict:
         matched = self.frame[self.frame.str.match(self.pattern)]
-        
+
         if matched.size == self.frame.size:
             return {
                 'result': True,
@@ -103,9 +100,27 @@ class RegexValidator(AbstractValidator):
             'count': len(matched)
         }
 
-# class NanValidator(AbstractValidator):
-#     def validate(self, frame) -> dict:
-#         return super().validate(frame)
+
+class NanValidator(AbstractValidator):
+
+    def __init__(self, config: ValidatorConfig):
+        super().__init__(config)
+
+    def validate(self, frames: dict):
+        target_frame = frames[self.config.segment]
+        if self.config.field_name.upper() == "ALL":
+            result = target_frame.isnull().values.any()
+        else:
+            result = target_frame[self.config.field_name].isnull().values.any()
+        if result:
+            raise exceptions.ValidationError(
+                "Failed NaN Validation. Please check file and source config.",
+                self.config.segment,
+                self.config.field_name,
+                len(target_frame.index),
+                len(target_frame.index)
+            )
+
 
 
 class RefValidator(AbstractValidator):
