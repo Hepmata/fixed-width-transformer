@@ -5,7 +5,15 @@
 
 Welcome to FixedWidth Transformer's documentation!
 ==================================================
+FixedWidth Transformer is a flexible ETL(Extract, Transform, Load) framework
+that aims to simplify the time required to process and push data.
 
+Being a flexible framework, you can choose to do the full ETL or individual sections,
+for example just extraction without transformation. or extraction and transformation without
+loading to external sources.
+
+.. note::
+   This project is still under development.
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -18,3 +26,8 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+Overview
+========
+
+
