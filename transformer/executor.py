@@ -1,9 +1,7 @@
-import os
-
 from transformer import config, result
 import transformer.response as rsp
 from transformer.result_mapper import JsonArrayResultMapper, DefaultArrayResultMapper
-from library import aws_service, logger
+from transformer.library import logger, aws_service
 
 log = logger.set_logger(__name__)
 

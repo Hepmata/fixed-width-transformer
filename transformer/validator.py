@@ -1,65 +1,69 @@
-import re
 import pandas as pd
-from library.exceptions import ValidationError
-from library import logger
+from transformer.config import ValidatorConfig
+from transformer.library import logger, exceptions
 import sys
 
 log = logger.set_logger(__name__)
 module = sys.modules[__name__]
-
-def pre_validate(): pass
-
-def post_validate(): pass
-
-def validate_records(validation_config, frames):
-    failed_validation = []
-    for key in validation_config.keys():
-        segment = validation_config[key]['segment']
-        for validator in validation_config[key]['validators']:
-            log.info(f"Running validator for field [{key}] with validation config: {validator}")
-            target_frame = pd.Series(frames[segment][key])
-            if validator['name'] == NricValidator.__name__:
-                response = getattr(module, validator['name'])(target_frame).validate()
-            elif validator['name'] == RefValidator.__name__:
-                log.info("Applying custom trigger for module")
-                response = getattr(module, validator['name'])(frames, {
-                    'key': key,
-                    'name': validator['name'],
-                    'ref': validator['ref'],
-                    'type': validator['type'],
-                    'segment': segment
-                }).validate()
-            else:
-                response = getattr(module, validator['name'])(target_frame, validator['pattern']).validate()
-            if response['result']:
-                log.info(f"Validation for field [{key}] passed!")
-            else:
-                failed_validation.append({
-                    'field': key,
-                    'validator': validator,
-                    'count': response['count']
-                })
-                print(failed_validation)
-    if len(failed_validation) > 0:
-        raise ValidationError(f"Failed to validate the following fields {failed_validation}. Failure Count is [{failed_validation}]")
-
+# 
+# def validate_records(validation_config, frames):
+#     failed_validation = []
+#     for key in validation_config.keys():
+#         segment = validation_config[key]['segment']
+#         for validator in validation_config[key]['validators']:
+#             log.info(f"Running validator for field [{key}] with validation config: {validator}")
+#             target_frame = pd.Series(frames[segment][key])
+#             if validator['name'] == NricValidator.__name__:
+#                 response = getattr(module, validator['name'])(target_frame).validate()
+#             elif validator['name'] == RefValidator.__name__:
+#                 log.info("Applying custom trigger for module")
+#                 response = getattr(module, validator['name'])(frames, {
+#                     'key': key,
+#                     'name': validator['name'],
+#                     'ref': validator['ref'],
+#                     'type': validator['type'],
+#                     'segment': segment
+#                 }).validate()
+#             else:
+#                 response = getattr(module, validator['name'])(target_frame, validator['pattern']).validate()
+#             if response['result']:
+#                 log.info(f"Validation for field [{key}] passed!")
+#             else:
+#                 failed_validation.append({
+#                     'field': key,
+#                     'validator': validator,
+#                     'count': response['count']
+#                 })
+#                 print(failed_validation)
+#     if len(failed_validation) > 0:
+#         raise ValidationError(f"Failed to validate the following fields {failed_validation}. Failure Count is [{failed_validation}]")
 
 class AbstractValidator:
-    def validate(self, frame) -> dict: pass
+    config: ValidatorConfig
+
+    def __init__(self, config: ValidatorConfig):
+        self.config = config
+
+    def validate(self, frames: dict): pass
 
 
 class NricValidator(AbstractValidator):
-    def validate(self, frame) -> dict:
-        matched = self.frame[self.frame.str.match(r'(?i)^[STFG]\d{7}[A-Z]$')]
-        if matched.size == self.frame.size:
-            return {
-                'result': True,
-                'count': len(matched)
-            }
-        return {
-            'result': False,
-            'count': len(self.frame) - len(matched)
-        }
+
+    def __init__(self, config: ValidatorConfig):
+        super().__init__(config)
+
+    def validate(self, frames: dict):
+        target_series = frames[self.config.segment][self.config.field_name]
+
+        matched = target_series[target_series.str.count(r'(?i)^[STFG]\d{7}[A-Z]$') == True]
+        if len(matched.index) != len(target_series.index):
+            raise exceptions.ValidationError(
+                "Validation Failed",
+                self.config.segment,
+                self.config.field_name,
+                matched.size,
+                target_series.size
+            )
 
 
 class RegexValidator(AbstractValidator):
@@ -88,6 +92,7 @@ class RegexValidator(AbstractValidator):
 
     def validate(self, frame) -> dict:
         matched = self.frame[self.frame.str.match(self.pattern)]
+        
         if matched.size == self.frame.size:
             return {
                 'result': True,
@@ -98,9 +103,9 @@ class RegexValidator(AbstractValidator):
             'count': len(matched)
         }
 
-class NanValidator(AbstractValidator):
-    def validate(self, frame) -> dict:
-        return super().validate(frame)
+# class NanValidator(AbstractValidator):
+#     def validate(self, frame) -> dict:
+#         return super().validate(frame)
 
 
 class RefValidator(AbstractValidator):

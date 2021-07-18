@@ -1,3 +1,10 @@
+import uuid
+from unittest.mock import MagicMock
+import pytest
+from transformer.config import ValidatorConfig
+from transformer.library.exceptions import ValidationError
+import pandas as pd
+from transformer import validator
 # import pytest
 # 
 # from transformer import validator
@@ -62,3 +69,42 @@
 #     def test_regex_validator_fail_null_both(self):
 #         with pytest.raises(TypeError):
 #             validators.regex_validator(None, None)
+
+class TestNricValidator:
+    @pytest.fixture
+    def dataframes(self):
+        dfs = {
+            "header": pd.DataFrame({
+                "field1": ["One"],
+                "field2": uuid.uuid4().__str__()
+            }),
+            "body": pd.DataFrame({
+                "body1": ["One", "Two", "Three", "Four", "Five"],
+                "body2": [1, 2, 3, 4, 5],
+                "ic": ["S1234567A", "S1234567A", "S1234567A", "S1234567A", "S1234567A"]
+            }),
+            "footer": pd.DataFrame({
+                "recordCount": [5]
+            })
+        }
+        return dfs
+
+    def test_success(self, dataframes):
+        config = ValidatorConfig(
+            "body",
+            "ic"
+        )
+        validator.NricValidator(config).validate(dataframes)
+
+    def test_failure(self):
+        dfs = {
+            "body": pd.DataFrame({
+                "ic": ["S1234567A", "00000"]
+            })
+        }
+        config = ValidatorConfig(
+            "body",
+            "ic"
+        )
+        with pytest.raises(ValidationError):
+            validator.NricValidator(config).validate(dfs)

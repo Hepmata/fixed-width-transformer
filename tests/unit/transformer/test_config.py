@@ -4,7 +4,7 @@ import uuid
 from unittest.mock import MagicMock
 import pytest
 import yaml
-import library.exceptions as exceptions
+from transformer.library import exceptions
 
 from transformer.config import ExecutorConfig, ResultMapperConfig, SourceMapperConfig, ResultConfig
 
@@ -67,7 +67,7 @@ class TestExecutorConfig:
         mocker.patch.dict(os.environ, {"config_type": "external"})
         mocker.patch.dict(os.environ, {"config_bucket": "somebucket"})
         mocker.patch.dict(os.environ, {"config_name": "somekey"})
-        mocker.patch("library.aws_service.download_s3_as_bytes", return_value=io.StringIO(self.shared_good_config))
+        mocker.patch("transformer.library.aws_service.download_s3_as_bytes", return_value=io.StringIO(self.shared_good_config))
         config = ExecutorConfig(key=self.shared_good_key)
         assert config.get_exact_config()
         assert config.get_config()

@@ -1,4 +1,4 @@
-from library import aws_service
+from transformer.library import aws_service
 
 
 def test_download_s3_file_success_no_client(mocker):

@@ -1,6 +1,6 @@
 from transformer.config import ResultConfig
-from library import aws_service, logger
-from library.kafka_service import send_messages
+from transformer.library import logger, aws_service
+from transformer.library import send_messages
 
 log = logger.set_logger(__name__)
 

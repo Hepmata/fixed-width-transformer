@@ -3,7 +3,8 @@ import os
 import re
 import sys
 import yaml
-from library import common, exceptions, logger, aws_service
+from transformer.library import exceptions
+from transformer.library import common, logger, aws_service
 from transformer import source_mapper
 
 log = logger.set_logger(__name__)
@@ -186,3 +187,14 @@ class ResultConfig:
 
     def get_arguments(self) -> dict:
         return self._arguments
+
+
+class ValidatorConfig:
+    segment: str
+    field_name: str
+    arguments: dict
+
+    def __init__(self, segment: str, field_name: str, arguments=None) -> None:
+        self.segment = segment
+        self.field_name = field_name
+        self.arguments = arguments if arguments is not None else {}
