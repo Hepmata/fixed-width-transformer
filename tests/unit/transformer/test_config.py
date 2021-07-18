@@ -6,7 +6,7 @@ import pytest
 import yaml
 import library.exceptions as exceptions
 
-from transformer.config import ExecutorConfig, ResultMapperConfig, SourceMapperConfig
+from transformer.config import ExecutorConfig, ResultMapperConfig, SourceMapperConfig, ResultConfig
 
 
 class TestExecutorConfig:
@@ -220,3 +220,63 @@ class TestResultMapperConfig:
         executor_cfg.get_exact_config.return_value = new_cfg
         with pytest.raises(exceptions.InvalidConfigError):
             ResultMapperConfig(executor_cfg)
+            
+class TestResultConfig:
+    @pytest.fixture
+    def executor_cfg(self):
+        cfg = {
+            "pattern": "somepattern",
+            "output": {
+                "result": {
+                    "name": "some",
+                    "arguments": {
+                        "arg1": "",
+                        "arg2": ""
+                    },
+                }
+            }
+        }
+        executor_config = MagicMock()
+        executor_config.get_exact_config.return_value = cfg
+        return executor_config
+
+    def test_success(self, executor_cfg):
+        result = ResultConfig(executor_cfg)
+        assert result.get_name()
+        assert len(result.get_arguments().keys()) == 2
+
+    def test_success_no_arguments(self, executor_cfg):
+        cfg = {
+            "pattern": "somepattern",
+            "output": {
+                "result": {
+                    "name": "some"
+                }
+            }
+        }
+        executor_cfg.get_exact_config.return_value = cfg
+        result = ResultConfig(executor_cfg)
+        assert result.get_name()
+        assert not result.get_arguments()
+
+    def test_missing_result(self, executor_cfg):
+        cfg = {
+            "pattern": "somepattern",
+            "output": {
+                "result": None
+            }
+        }
+        executor_cfg.get_exact_config.return_value = cfg
+        with pytest.raises(exceptions.InvalidConfigError):
+            ResultConfig(executor_cfg)
+    
+    def test_missing_result_empty(self, executor_cfg):
+        cfg = {
+            "pattern": "somepattern",
+            "output": {
+                "result": {}
+            }
+        }
+        executor_cfg.get_exact_config.return_value = cfg
+        with pytest.raises(exceptions.InvalidConfigError):
+            ResultConfig(executor_cfg)

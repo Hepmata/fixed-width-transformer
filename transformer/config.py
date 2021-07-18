@@ -164,6 +164,11 @@ class ResultConfig:
     _arguments: dict
 
     def __init__(self, config: ExecutorConfig):
+        if 'result' not in config.get_exact_config()['output'].keys():
+            raise exceptions.InvalidConfigError('result segment is missing. Please ensure configuration is provided')
+        if config.get_exact_config()['output']['result'] is None or not config.get_exact_config()['output']['result']:
+            raise exceptions.InvalidConfigError('result segment cannot be empty. Please ensure configuration is valid')
+
         self._name = config.get_exact_config()['output']['result']['name']
         self._arguments = {}
         if 'arguments' in config.get_exact_config()['output']['result'].keys():
