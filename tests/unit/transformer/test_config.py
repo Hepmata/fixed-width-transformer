@@ -178,7 +178,15 @@ class TestResultMapperConfig:
                     "format": [
                         {
                             "name": "test",
-                            "value": "lalala"
+                            "value": "lalala",
+                            "validators": [
+                                {
+                                    "name": "RegexValidators",
+                                    "arguments": {
+                                        "pattern": "someval"
+                                    }
+                                }
+                            ]
                         }
                     ]
                 }
@@ -220,7 +228,8 @@ class TestResultMapperConfig:
         executor_cfg.get_exact_config.return_value = new_cfg
         with pytest.raises(exceptions.InvalidConfigError):
             ResultMapperConfig(executor_cfg)
-            
+
+
 class TestResultConfig:
     @pytest.fixture
     def executor_cfg(self):
@@ -269,12 +278,22 @@ class TestResultConfig:
         executor_cfg.get_exact_config.return_value = cfg
         with pytest.raises(exceptions.InvalidConfigError):
             ResultConfig(executor_cfg)
-    
+
     def test_missing_result_empty(self, executor_cfg):
         cfg = {
             "pattern": "somepattern",
             "output": {
                 "result": {}
+            }
+        }
+        executor_cfg.get_exact_config.return_value = cfg
+        with pytest.raises(exceptions.InvalidConfigError):
+            ResultConfig(executor_cfg)
+
+    def test_missing_result_entirely(self, executor_cfg):
+        cfg = {
+            "pattern": "somepattern",
+            "output": {
             }
         }
         executor_cfg.get_exact_config.return_value = cfg

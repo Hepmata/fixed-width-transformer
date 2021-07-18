@@ -80,28 +80,6 @@ class ExecutorConfig:
 
 
 @dataclasses.dataclass
-class ResultMapperConfig:
-    _result_config = dict
-    _validations = [dict]
-
-    def __init__(self, config: ExecutorConfig):
-        self.set_result_config(config.get_exact_config())
-
-    def set_result_config(self, config):
-        # TODO: Enhance if need to formalize the config in a better flow.
-        try:
-            if 'format' in config['output']:
-                self._result_config = config['output']['format']
-            else:
-                self._result_config = {}
-        except KeyError as e:
-            raise exceptions.InvalidConfigError(e)
-
-    def get_result_config(self):
-        return self._result_config
-
-
-@dataclasses.dataclass
 class SourceMapperConfig:
     _validations: dict
     _mappers = [source_mapper.AbstractDataMapper]
@@ -156,6 +134,35 @@ class SourceMapperConfig:
 
     def get_mappers(self):
         return self._mappers
+
+
+@dataclasses.dataclass
+class ResultMapperConfig:
+    _result_config: dict
+    _validations: []
+
+    def __init__(self, config: ExecutorConfig):
+        self.set_result_config(config.get_exact_config())
+        self.set_validators(config.get_exact_config())
+
+    def set_result_config(self, config):
+        # TODO: Enhance if need to formalize the config in a better flow.
+        try:
+            if 'format' in config['output']:
+                self._result_config = config['output']['format']
+            else:
+                self._result_config = {}
+        except KeyError as e:
+            raise exceptions.InvalidConfigError(e)
+
+    def set_validators(self, config):
+        pass
+
+    def get_result_config(self):
+        return self._result_config
+
+    def get_validators(self):
+        return self._validations
 
 
 @dataclasses.dataclass
