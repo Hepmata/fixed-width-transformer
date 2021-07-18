@@ -30,7 +30,15 @@ jobs:
           fail_ci_if_error: true
       - name: Coveralls Upload
         uses: AndreMiras/coveralls-python-action@develop
-      
+#  deploy-docs:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v2
+#      - name: Setup Python
+#        uses: actions/setup-python@master
+#      - name: Install Dependencies
+#        run: pip3 install sphinx
+#      
   deploy-pypi:
     needs: unit-test
     runs-on: ubuntu-latest

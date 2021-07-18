@@ -7,19 +7,6 @@ import botocore.exceptions as be
 log = logger.set_logger(__name__)
 
 
-def start_glue_crawler(client=None):
-    config_name = 'crawler_name'
-    if config_name not in os.environ.keys():
-        raise Exception(f'Failed to start crawler due to missing environment variables. Please provide the required variable [{config_name}]')
-    config_name = os.environ['crawler_name']
-    if client is None:
-        client = boto3.client('glue')
-    log.info(f'Starting Glue Crawler [{config_name}]...')
-    response = client.start_crawler(Name=config_name)
-    log.info("Glue Crawler Trigger Completed!")
-    return response
-
-
 def download_s3_file(bucket: str, key: str, file_name: str, client=None):
     log.info(f'Starting to download S3 file {key} from bucket [{bucket}] to local file [{file_name}]')
     if client is None:

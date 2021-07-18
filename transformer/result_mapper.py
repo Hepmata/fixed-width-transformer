@@ -15,7 +15,7 @@ class AbstractResultMapper:
     def run(self, input_data: dict[pd.DataFrame]): pass
 
 
-class SourceArrayResultMapper(AbstractResultMapper):
+class DefaultArrayResultMapper(AbstractResultMapper):
 
     def __init__(self, config: ResultMapperConfig):
         super().__init__(config)
