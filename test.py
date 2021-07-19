@@ -1,16 +1,22 @@
 import numpy as np
 import pandas as pd
 
-df = pd.DataFrame({
-    "field": ["asda", np.NAN, "asdasd"]
-})
-df1 = pd.DataFrame({
-    "field": ["asda", "asdasd", "asdasd"]
-})
-t = pd.DataFrame({
-    "test": [1]
+# 
+# data = [
+#     {"d1": [1, 2, 3]},
+#     {"d2": [4, 5, 6]}
+# ]
+# 
+# dfs = []
+# for k in data:
+#     dfs.append(pd.DataFrame(k))
+# 
+# concat = pd.concat(dfs, axis=1)
+# print(dfs)
+# print(concat.to_dict('records'))
+
+p = pd.DataFrame({
+    "1": [1]*5
 })
 
-print(df.isnull().values.any())
-print(df1.isnull().values.any())
-print(type(t['test'][0]))
+print(p)

@@ -1,7 +1,7 @@
 from tests.test_helper import generate_fw_text_line
 from transformer import config
 from transformer.library import exceptions
-from transformer import source_mapper
+from transformer.source import source_mapper
 import pytest
 import os
 import uuid

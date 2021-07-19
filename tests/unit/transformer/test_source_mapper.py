@@ -3,7 +3,7 @@ import uuid
 from tests.test_helper import generate_fw_text_line
 import pytest
 
-from transformer.source_mapper import HeaderDataMapper, BodyDataMapper, FooterDataMapper, MapperConfig
+from transformer.source.source_mapper import HeaderDataMapper, BodyDataMapper, FooterDataMapper, MapperConfig
 from transformer.library.exceptions import SourceFileError
 
 
