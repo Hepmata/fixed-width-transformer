@@ -24,6 +24,7 @@ class AbstractDataMapper:
 
 
 class HeaderDataMapper(AbstractDataMapper):
+    @PreValidate
     def run(self, config: MapperConfig, file_name: str) -> pd.DataFrame:
         try:
             data = pd.read_fwf(file_name, colspecs=config.specs, names=config.names,
@@ -53,6 +54,7 @@ class BodyDataMapper(AbstractDataMapper):
 
 
 class FooterDataMapper(AbstractDataMapper):
+    @PreValidate
     def run(self, config: MapperConfig, file_name: str) -> pd.DataFrame:
         try:
             with open(file_name, 'r') as lines:
