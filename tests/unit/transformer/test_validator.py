@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 import numpy as np
 import pytest
 from transformer.config import ValidatorConfig
-from transformer.library.exceptions import ValidationError
+from transformer.library.exceptions import ValidationError, MissingConfigError
 import pandas as pd
 from transformer import validator
 # import pytest
@@ -127,14 +127,14 @@ class TestNanValidator:
             "body",
             "ALL"
         )
-        validator.NanValidator(config).validate(dataframes)
+        validator.NaNValidator(config).validate(dataframes)
 
     def test_success_field(self, dataframes):
         config = ValidatorConfig(
             "body",
             "field"
         )
-        validator.NanValidator(config).validate(dataframes)
+        validator.NaNValidator(config).validate(dataframes)
 
     def test_failure_all(self, dataframes):
         dataframes['body'] = pd.DataFrame({
@@ -146,7 +146,7 @@ class TestNanValidator:
             "ALL"
         )
         with pytest.raises(ValidationError):
-            validator.NanValidator(config).validate(dataframes)
+            validator.NaNValidator(config).validate(dataframes)
 
     def test_failure_field(self, dataframes):
         dataframes['body'] = pd.DataFrame({
@@ -158,44 +158,171 @@ class TestNanValidator:
             "field"
         )
         with pytest.raises(ValidationError):
-            validator.NanValidator(config).validate(dataframes)
+            validator.NaNValidator(config).validate(dataframes)
 
 
 class TestRefValidator:
-    def test_success_count(self):
-        dataframes = {
-            "body": pd.DataFrame({
-                "field1": [1,2,3,4,5]
-            }),
-            "footer": pd.DataFrame({
-                "recordCount": [5]
-            })
-        }
-        config = ValidatorConfig(
-            "body",
-            "field1",
-            arguments={
-                "type": "count",
-                "ref": "footer.recordCount"
+    class TestSuccess:
+        def test_count(self):
+            dataframes = {
+                "body": pd.DataFrame({
+                    "field1": [1,2,3,4,5]
+                }),
+                "footer": pd.DataFrame({
+                    "recordCount": [5]
+                })
             }
-        )
-        validator.RefValidator(config).validate(dataframes)
+            config = ValidatorConfig(
+                "body",
+                "field1",
+                arguments={
+                    "type": "count",
+                    "ref": "footer.recordCount"
+                }
+            )
+            validator.RefValidator(config).validate(dataframes)
 
-    def test_success_count_reverse(self):
-        dataframes = {
-            "body": pd.DataFrame({
-                "field1": [1,2,3,4,5]
-            }),
+        def test_count_reverse(self):
+            dataframes = {
+                "body": pd.DataFrame({
+                    "field1": [1,2,3,4,5]
+                }),
+                "footer": pd.DataFrame({
+                    "recordCount": [5]
+                })
+            }
+            config = ValidatorConfig(
+                "footer",
+                "recordCount",
+                arguments={
+                    "type": "count",
+                    "ref": "body.field1"
+                }
+            )
+            validator.RefValidator(config).validate(dataframes)
+
+        def test_match(self):
+            dataframes = {
+                "body": pd.DataFrame({
+                    "field1": [1,2,3,4,5],
+                    "matcherField": [1,2,3,4,5]
+                }),
+                "footer": pd.DataFrame({
+                    "recordCount": [5]
+                })
+            }
+            config = ValidatorConfig(
+                "body",
+                "field1",
+                arguments={
+                    "type": "match",
+                    "ref": "body.matcherField"
+                }
+            )
+            validator.RefValidator(config).validate(dataframes)
+
+        def test_match_reverse(self):
+            dataframes = {
+                "body": pd.DataFrame({
+                    "field1": [1, 2, 3, 4, 5],
+                }),
+                "footer": pd.DataFrame({
+                    "recordCount": [5]
+                }),
+                "match": pd.DataFrame({
+                    "field1": [1, 2, 3, 4, 5]
+                })
+            }
+            config = ValidatorConfig(
+                "body",
+                "field1",
+                arguments={
+                    "type": "match",
+                    "ref": "match.field1"
+                }
+            )
+            validator.RefValidator(config).validate(dataframes)
+
+    class TestFailure:
+        def test_failure(self):
+            dataframes = {
+                "body": pd.DataFrame({
+                    "field1": [1, 2, 3, 4, 5]
+                }),
+                "footer": pd.DataFrame({
+                    "recordCount": [2]
+                })
+            }
+            config = ValidatorConfig(
+                "footer",
+                "recordCount",
+                arguments={
+                    "type": "count",
+                    "ref": "body.field1"
+                }
+            )
+            with pytest.raises(ValidationError):
+                validator.RefValidator(config).validate(dataframes)
+
+
+class TestRegexValidator:
+    @pytest.fixture
+    def dataframes(self):
+        return {
             "footer": pd.DataFrame({
-                "recordCount": [5]
+                "field1": ["SX1", "SX2", "SX3", "SX4", "SX5"]
             })
         }
-        config = ValidatorConfig(
-            "footer",
-            "recordCount",
-            arguments={
-                "type": "count",
-                "ref": "body.field1"
-            }
-        )
-        validator.RefValidator(config).validate(dataframes)
+
+    class TestSuccess:
+        def test_regex(self, dataframes):
+            config = ValidatorConfig(
+                segment="footer",
+                field_name="field1",
+                arguments={
+                    "pattern": r'^SX\d+$'
+                }
+            )
+            validator.RegexValidator(config).validate(dataframes)
+
+    class TestFailure:
+        def test_invalid_pattern(self, dataframes):
+            config = ValidatorConfig(
+                segment="footer",
+                field_name="field1",
+                arguments={
+                    "pattern": "asdasda"
+                }
+            )
+            with pytest.raises(ValidationError):
+                validator.RegexValidator(config).validate(dataframes)
+
+        def test_missing_argument(self, dataframes):
+            config = ValidatorConfig(
+                segment="footer",
+                field_name="field1",
+            )
+            with pytest.raises(MissingConfigError):
+                validator.RegexValidator(config).validate(dataframes)
+
+        def test_invalid_argument_type(self, dataframes):
+            config = ValidatorConfig(
+                segment="footer",
+                field_name="field1",
+                arguments={
+                    "pattern": 0
+                }
+            )
+            with pytest.raises(MissingConfigError):
+                validator.RegexValidator(config).validate(dataframes)
+
+        def test_mismatch(self, dataframes):
+            config = ValidatorConfig(
+                segment="footer",
+                field_name="field1",
+                arguments={
+                    "pattern": r'^SX$'
+                }
+            )
+            with pytest.raises(ValidationError):
+                validator.RegexValidator(config).validate(dataframes)

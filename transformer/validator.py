@@ -1,7 +1,7 @@
 import pandas as pd
 from transformer.config import ValidatorConfig
 from transformer.library import logger
-from transformer.library.exceptions import ValidationError
+from transformer.library.exceptions import ValidationError, MissingConfigError
 import sys
 
 log = logger.set_logger(__name__)
@@ -88,21 +88,27 @@ class RegexValidator(AbstractValidator):
     def __init__(self, config: ValidatorConfig):
         super().__init__(config)
 
-    def validate(self, frame) -> dict:
-        matched = self.frame[self.frame.str.match(self.pattern)]
+    def validate(self, frames: dict):
+        if 'pattern' not in self.config.arguments.keys():
+            raise MissingConfigError("Required argument [pattern] is missing. Please verify configuration.")
 
-        if matched.size == self.frame.size:
-            return {
-                'result': True,
-                'count': len(matched)
-            }
-        return {
-            'result': False,
-            'count': len(matched)
-        }
+        if not isinstance(self.config.arguments['pattern'], str):
+            raise MissingConfigError("Required argument [pattern] is not of string/str type. Please verify configuration")
+
+        target_series = frames[self.config.segment][self.config.field_name]
+        matched = target_series[target_series.str.count(self.config.arguments['pattern']) == True]
+
+        if len(matched.index) != len(target_series.index):
+            raise ValidationError(
+                "Validation Failed",
+                self.config.segment,
+                self.config.field_name,
+                matched.size,
+                target_series.size
+            )
 
 
-class NanValidator(AbstractValidator):
+class NaNValidator(AbstractValidator):
 
     def __init__(self, config: ValidatorConfig):
         super().__init__(config)
@@ -129,47 +135,19 @@ class RefValidator(AbstractValidator):
 
     def validate(self, frames: dict):
         if self.config.arguments['type'] == "match":
-            splits = self.config['ref'].split('.')
+            splits = self.config.arguments['ref'].split('.')
             target = frames[splits[0]][splits[1]]
             source = frames[self.config.segment][self.config.field_name]
-            if len(target) > 1 and len(source) > 1:
-                if not target.equals(source):
-                    raise ValidationError(
-                        "Failed RefValidation",
-                        self.config.segment,
-                        self.config.field_name,
-                        target.value_counts().loc[False],
-                        len(target.index)
-                    )
-            elif len(target) == 1 and len(source) > 1:
-                data = source == target[0]
-                if False in data:
-                    raise ValidationError(
-                        "Failed RefValidation",
-                        self.config.segment,
-                        self.config.field_name,
-                        target.value_counts().loc[False],
-                        len(target.index)
-                    )
-            elif len(target) > 1 and len(source) == 1:
-                data = target == source[0]
-                if False in data:
-                    raise ValidationError(
-                        "Failed RefValidation",
-                        self.config.segment,
-                        self.config.field_name,
-                        target[target == False].count(),
-                        len(target.index)
-                    )
-            else:
-                if int(target[0]) != int(source[0]):
-                    raise ValidationError(
-                        "Failed RefValidation",
-                        self.config.segment,
-                        self.config.field_name,
-                        source.value_counts().loc[False],
-                        len(source.index)
-                    )
+            print(target, source)
+
+            if not target.equals(source):
+                raise ValidationError(
+                    "Failed RefValidation",
+                    self.config.segment,
+                    self.config.field_name,
+                    target.value_counts().loc[False],
+                    len(target.index)
+                )
 
         if self.config.arguments['type'] == "count":
             splits = self.config.arguments['ref'].split('.')
