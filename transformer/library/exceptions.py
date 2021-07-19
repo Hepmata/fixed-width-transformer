@@ -31,6 +31,22 @@ class AppenderError(Exception):
 
 
 class ValidationError(Exception):
-    pass
-    # def __init__(self, message, count):
-    #     super().__init__(message)
+    segment: str
+    fieldName: str
+    failCount: int
+    recordCount: int
+
+    def __init__(self, msg: str, segment: str, field_name: str, fail_count: int, record_count: int) -> None:
+        self.segment = segment
+        self.fieldName = field_name
+        self.failCount = fail_count
+        self.recordCount = record_count
+        super().__init__(msg)
+
+
+class SourceFileError(Exception):
+    file_name: str
+
+    def __init__(self, msg, file_name):
+        self.file_name = file_name
+        super().__init__(msg)

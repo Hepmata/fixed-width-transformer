@@ -4,7 +4,7 @@ import uuid
 from unittest.mock import MagicMock
 import pytest
 import yaml
-import library.exceptions as exceptions
+from transformer.library import exceptions
 
 from transformer.config import ExecutorConfig, ResultMapperConfig, SourceMapperConfig, ResultConfig
 
@@ -67,7 +67,7 @@ class TestExecutorConfig:
         mocker.patch.dict(os.environ, {"config_type": "external"})
         mocker.patch.dict(os.environ, {"config_bucket": "somebucket"})
         mocker.patch.dict(os.environ, {"config_name": "somekey"})
-        mocker.patch("library.aws_service.download_s3_as_bytes", return_value=io.StringIO(self.shared_good_config))
+        mocker.patch("transformer.library.aws_service.download_s3_as_bytes", return_value=io.StringIO(self.shared_good_config))
         config = ExecutorConfig(key=self.shared_good_key)
         assert config.get_exact_config()
         assert config.get_config()
@@ -128,9 +128,8 @@ class TestSourceMapperConfig:
 
     def test_format(self, executor_cfg):
         result = SourceMapperConfig(executor_cfg)
-        assert result.get_mappers()
-        assert len(result.get_validations().keys()) == 1
-        assert len(result.get_validations()['header']) == 1
+        assert len(result.get_mappers()) == 1
+        assert len(result.get_mappers()[0].validations) == 1
 
     def test_no_validators(self, executor_cfg):
         cfg = {
@@ -149,8 +148,8 @@ class TestSourceMapperConfig:
         }
         executor_cfg.get_exact_config.return_value = cfg
         result = SourceMapperConfig(executor_cfg)
-        assert result.get_mappers()
-        assert not result.get_validations()
+        assert len(result.get_mappers()) == 1
+        assert len(result.get_mappers()[0].validations) == 0
 
     def test_empty_source(self, executor_cfg):
         cfg = {

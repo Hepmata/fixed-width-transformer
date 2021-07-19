@@ -1,6 +1,6 @@
 import json
-from library.aws_service import retrieve_secret
-from library import logger
+from transformer.library.aws_service import retrieve_secret
+from transformer.library import logger
 import boto3
 from kafka import KafkaProducer
 

@@ -1,7 +1,7 @@
 import dataclasses
 from typing import IO
 
-from library import aws_service
+from transformer.library import aws_service
 
 
 class AbstractConfigRetriever:

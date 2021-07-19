@@ -1,6 +1,6 @@
 import logging
 
-from library import logger
+from transformer.library import logger
 
 
 class TestLogger:

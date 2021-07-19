@@ -1,4 +1,4 @@
-from library import logger
+from transformer.library import logger
 import os
 import boto3
 import json

@@ -6,3 +6,4 @@ pyyaml==5.4.1
 kafka-python
 pytest-mock==3.6.1
 pytest-cov==2.12.1
+pytest

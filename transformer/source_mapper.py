@@ -1,64 +1,70 @@
-from library import logger, exceptions
+from transformer.library import logger
+from transformer.library.exceptions import SourceFileError
+from transformer.decorators import PreValidate
+import dataclasses
 from io import StringIO
-from transformer import decorators
-from library import exceptions
 import pandas as pd
 
 log = logger.set_logger(__name__)
 
 
-class AbstractDataMapper:
+@dataclasses.dataclass
+class MapperConfig:
+    name: str
     segment: str
-    mapping = dict
+    names: list
+    specs: list
+    skipHeader: bool
+    skipFooter: bool
+    validations: list
 
-    def __init__(self, segment: str, mapping: dict):
-        self.segment = segment
-        self.mapping = mapping
 
-    def validate(self):
-        raise exceptions.ValidationError("Failed to validate due to empty constraints")
-
-    def run(self, file_name): pass
-
-    def get_segment(self):
-        return self.segment
+class AbstractDataMapper:
+    def run(self, config: MapperConfig, file_name: str) -> pd.DataFrame: pass
 
 
 class HeaderDataMapper(AbstractDataMapper):
-    def __init__(self, mapping: dict):
-        super().__init__('header', mapping)
-
-    def run(self, file_name) -> pd.DataFrame:
-        return pd.read_fwf(file_name, colspecs=self.mapping['specs'], names=self.mapping['names'],
-                           converters={h: str for h in self.mapping['names']}, delimiter="\n\t", nrows=1)
-
-
-class SubHeaderDataMapper(AbstractDataMapper):
-    def __init__(self, mapping: dict):
-        super().__init__('subheader', mapping)
-
-    def run(self, file_name):
-        raise NotImplemented()
+    @PreValidate
+    def run(self, config: MapperConfig, file_name: str) -> pd.DataFrame:
+        try:
+            data = pd.read_fwf(file_name, colspecs=config.specs, names=config.names,
+                               converters={h: str for h in config.names}, delimiter="\n\t", nrows=1)
+            if len(data.index) == 0:
+                raise SourceFileError("Invalid Source File, Index is empty", file_name)
+            return data
+        except FileNotFoundError as e:
+            raise SourceFileError(e, file_name)
 
 
 class BodyDataMapper(AbstractDataMapper):
-    def __init__(self, mapping: dict):
-        super().__init__('body', mapping)
-
-    def run(self, file_name) -> pd.DataFrame:
-        return pd.read_fwf(file_name, colspecs=self.mapping['specs'], header=0,
-                           names=self.mapping['names'],
-                           converters={h: str for h in self.mapping['names']}, skipfooter=1,
-                           delimiter="\n\t")
+    @PreValidate
+    def run(self, config: MapperConfig, file_name: str) -> pd.DataFrame:
+        header = 0 if config.skipHeader else None
+        footer = 1 if config.skipFooter else 0
+        try:
+            data = pd.read_fwf(file_name, colspecs=config.specs, header=header,
+                               names=config.names,
+                               converters={h: str for h in config.names}, skipfooter=footer,
+                               delimiter="\n\t")
+            if len(data.index) == 0:
+                raise SourceFileError("Invalid Source File, Index is empty", file_name)
+            return data
+        except FileNotFoundError as e:
+            raise SourceFileError(e, file_name)
 
 
 class FooterDataMapper(AbstractDataMapper):
-    def __init__(self, mapping: dict):
-        super().__init__('footer', mapping)
-
-    def run(self, file_name) -> pd.DataFrame:
-        with open(file_name, 'r') as lines:
-            last_line = lines.readlines()[-1]
-        return pd.read_fwf(StringIO(last_line), colspecs=self.mapping['specs'],
-                           names=self.mapping['names'],
-                           converters={h: str for h in self.mapping['names']}, delimiter="\n\t")
+    @PreValidate
+    def run(self, config: MapperConfig, file_name: str) -> pd.DataFrame:
+        try:
+            with open(file_name, 'r') as lines:
+                read = lines.readlines()
+                if len(read) == 0:
+                    raise SourceFileError("Invalid Source File, Index is empty", file_name)
+                last_line = read[-1]
+                data = pd.read_fwf(StringIO(last_line), colspecs=config.specs,
+                                   names=config.names,
+                                   converters={h: str for h in config.names}, delimiter="\n\t")
+                return data
+        except FileNotFoundError as e:
+            raise SourceFileError(e, file_name)
