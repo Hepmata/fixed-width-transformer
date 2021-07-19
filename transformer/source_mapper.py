@@ -34,6 +34,7 @@ class HeaderDataMapper(AbstractDataMapper):
         except FileNotFoundError as e:
             raise SourceFileError(e, file_name)
 
+
 class SubHeaderDataMapper(AbstractDataMapper):
     def __init__(self, mapping: dict):
         super().__init__('subheader', mapping)
@@ -70,8 +71,15 @@ class FooterDataMapper(AbstractDataMapper):
         super().__init__('footer', mapping)
 
     def run(self, file_name) -> pd.DataFrame:
-        with open(file_name, 'r') as lines:
-            last_line = lines.readlines()[-1]
-        return pd.read_fwf(StringIO(last_line), colspecs=self.mapping['specs'],
-                           names=self.mapping['names'],
-                           converters={h: str for h in self.mapping['names']}, delimiter="\n\t")
+        try:
+            with open(file_name, 'r') as lines:
+                read = lines.readlines()
+                if len(read) == 0:
+                    raise SourceFileError("Invalid Source File, Index is empty", file_name)
+                last_line = read[-1]
+                data = pd.read_fwf(StringIO(last_line), colspecs=self.mapping['specs'],
+                                   names=self.mapping['names'],
+                                   converters={h: str for h in self.mapping['names']}, delimiter="\n\t")
+                return data
+        except FileNotFoundError as e:
+            raise SourceFileError(e, file_name)

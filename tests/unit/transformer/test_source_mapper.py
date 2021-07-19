@@ -140,6 +140,64 @@ class TestBodyDataMapper:
                 BodyDataMapper(mapping).run(file_name)
 
 
+class TestFooterDataMapper:
+    @pytest.fixture(autouse=True)
+    def file_name(self):
+        source_file_name = f"fw_file-{uuid.uuid4().__str__()}.txt"
+        yield source_file_name
+        if os.path.exists(source_file_name):
+            os.remove(source_file_name)
+
+    class TestSuccess:
+        def test_header(self, file_name):
+            mapping = {
+                "names": ["field1", "field2"],
+                "specs": [(0, 10), (10, 20)]
+            }
+
+            values = ["val1", "val2"]
+            spacing = [10, 10]
+            with open(file_name, 'w') as file:
+                file.write(generate_fw_text_line(values, spacing))
+
+            data = FooterDataMapper(mapping).run(file_name)
+            expected = ["val1      ", "val2      "]
+            for itr in range(len(values)):
+                assert data[mapping['names'][itr]][0] == expected[itr]
+
+        def test_nan(self, file_name):
+            mapping = {
+                "names": ["field1", "field2"],
+                "specs": [(0, 10), (50, 60)]
+            }
+            values = ["val1", "val2"]
+            spacing = [10, 10]
+            with open(file_name, 'w') as file:
+                file.write(generate_fw_text_line(values, spacing))
+
+            data = FooterDataMapper(mapping).run(file_name)
+            count = data.isnull().values.sum()
+            assert count == 1
+
+    class TestFailure:
+        def test_empty_file(self, file_name):
+            mapping = {
+                "names": ["field1", "field2"],
+                "specs": [(0, 10), (10, 20)]
+            }
+            with open(file_name, 'w') as file:
+                pass
+            with pytest.raises(SourceFileError):
+                FooterDataMapper(mapping).run(file_name)
+
+        def test_missing_file(self, file_name):
+            mapping = {
+                "names": ["field1", "field2"],
+                "specs": [(0, 10), (10, 20)]
+            }
+            with pytest.raises(SourceFileError):
+                FooterDataMapper(mapping).run(file_name)
+
 def generate_fw_text_line(values: list[str], spacing: [10,10]):
     if len(values) != len(spacing):
         raise Exception("values and spacing must be of the same length")
