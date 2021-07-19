@@ -1,0 +1,23 @@
+name: Release Workflow
+on: 
+  release:
+    types: [published, created, edited]
+jobs:
+  deploy-pypi:
+    needs: unit-test
+    runs-on: ubuntu-latest
+    container: python:3.9.6-slim-buster
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: |
+          pip3 install -r requirements.txt
+          python3 -m pip install --upgrade build 
+          python3 -m pip install --upgrade twine
+      - name: Generate Version
+        run: |
+          sed -i "s/0.0.1/0.0.1-$(date +%s)/g" setup.cfg
+      - name: Build and Deploy
+        run: |
+          python3 -m build
+          python3 -m twine upload -u __token__ -p ${{secrets.PYPI_TOKEN}} --repository fixedwidth-transformer --repository-url https://upload.pypi.org/legacy/ dist/*
