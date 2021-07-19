@@ -42,3 +42,11 @@ class ValidationError(Exception):
         self.failCount = fail_count
         self.recordCount = record_count
         super().__init__(msg)
+
+
+class SourceFileError(Exception):
+    file_name: str
+
+    def __init__(self, msg, file_name):
+        self.file_name = file_name
+        super().__init__(msg)

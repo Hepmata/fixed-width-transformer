@@ -1,4 +1,5 @@
-from transformer.library import logger, exceptions
+from transformer.library import logger
+from transformer.library.exceptions import SourceFileError
 from io import StringIO
 import pandas as pd
 
@@ -13,9 +14,6 @@ class AbstractDataMapper:
         self.segment = segment
         self.mapping = mapping
 
-    def validate(self):
-        raise exceptions.ValidationError("Failed to validate due to empty constraints")
-
     def run(self, file_name): pass
 
     def get_segment(self):
@@ -27,9 +25,14 @@ class HeaderDataMapper(AbstractDataMapper):
         super().__init__('header', mapping)
 
     def run(self, file_name) -> pd.DataFrame:
-        return pd.read_fwf(file_name, colspecs=self.mapping['specs'], names=self.mapping['names'],
-                           converters={h: str for h in self.mapping['names']}, delimiter="\n\t", nrows=1)
-
+        try:
+            data = pd.read_fwf(file_name, colspecs=self.mapping['specs'], names=self.mapping['names'],
+                               converters={h: str for h in self.mapping['names']}, delimiter="\n\t", nrows=1)
+            if len(data.index) == 0:
+                raise SourceFileError("Invalid Source File, Index is empty", file_name)
+            return data
+        except FileNotFoundError as e:
+            raise SourceFileError(e, file_name)
 
 class SubHeaderDataMapper(AbstractDataMapper):
     def __init__(self, mapping: dict):
@@ -44,10 +47,22 @@ class BodyDataMapper(AbstractDataMapper):
         super().__init__('body', mapping)
 
     def run(self, file_name) -> pd.DataFrame:
-        return pd.read_fwf(file_name, colspecs=self.mapping['specs'], header=0,
-                           names=self.mapping['names'],
-                           converters={h: str for h in self.mapping['names']}, skipfooter=1,
-                           delimiter="\n\t")
+        header = 0
+        footer = 1
+        if 'skipHeader' in self.mapping.keys():
+            header = 0 if self.mapping['skipHeader'] else None
+        if 'skipFooter' in self.mapping.keys():
+            footer = 1 if self.mapping['skipFooter'] else 0
+        try:
+            data = pd.read_fwf(file_name, colspecs=self.mapping['specs'], header=header,
+                               names=self.mapping['names'],
+                               converters={h: str for h in self.mapping['names']}, skipfooter=footer,
+                               delimiter="\n\t")
+            if len(data.index) == 0:
+                raise SourceFileError("Invalid Source File, Index is empty", file_name)
+            return data
+        except FileNotFoundError as e:
+            raise SourceFileError(e, file_name)
 
 
 class FooterDataMapper(AbstractDataMapper):
