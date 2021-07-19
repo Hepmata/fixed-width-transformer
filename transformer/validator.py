@@ -1,5 +1,6 @@
+import dataclasses
+
 import pandas as pd
-from transformer.config import ValidatorConfig
 from transformer.library import logger
 from transformer.library.exceptions import ValidationError, MissingConfigError
 import sys
@@ -7,37 +8,20 @@ import sys
 log = logger.set_logger(__name__)
 module = sys.modules[__name__]
 
-# def validate_records(validation_config, frames):
-#     failed_validation = []
-#     for key in validation_config.keys():
-#         segment = validation_config[key]['segment']
-#         for validator in validation_config[key]['validators']:
-#             log.info(f"Running validator for field [{key}] with validation config: {validator}")
-#             target_frame = pd.Series(frames[segment][key])
-#             if validator['name'] == NricValidator.__name__:
-#                 response = getattr(module, validator['name'])(target_frame).validate()
-#             elif validator['name'] == RefValidator.__name__:
-#                 log.info("Applying custom trigger for module")
-#                 response = getattr(module, validator['name'])(frames, {
-#                     'key': key,
-#                     'name': validator['name'],
-#                     'ref': validator['ref'],
-#                     'type': validator['type'],
-#                     'segment': segment
-#                 }).validate()
-#             else:
-#                 response = getattr(module, validator['name'])(target_frame, validator['pattern']).validate()
-#             if response['result']:
-#                 log.info(f"Validation for field [{key}] passed!")
-#             else:
-#                 failed_validation.append({
-#                     'field': key,
-#                     'validator': validator,
-#                     'count': response['count']
-#                 })
-#                 print(failed_validation)
-#     if len(failed_validation) > 0:
-#         raise ValidationError(f"Failed to validate the following fields {failed_validation}. Failure Count is [{failed_validation}]")
+
+@dataclasses.dataclass
+class ValidatorConfig:
+    validator_name: str
+    segment: str
+    field_name: str
+    arguments: dict
+
+    def __init__(self, validator_name: str, segment: str, field_name: str, arguments=None) -> None:
+        self.validator_name = validator_name
+        self.segment = segment
+        self.field_name = field_name
+        self.arguments = arguments if arguments is not None else {}
+
 
 class AbstractValidator:
     config: ValidatorConfig

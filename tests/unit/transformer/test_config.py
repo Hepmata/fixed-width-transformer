@@ -128,9 +128,8 @@ class TestSourceMapperConfig:
 
     def test_format(self, executor_cfg):
         result = SourceMapperConfig(executor_cfg)
-        assert result.get_mappers()
-        assert len(result.get_validations().keys()) == 1
-        assert len(result.get_validations()['header']) == 1
+        assert len(result.get_mappers()) == 1
+        assert len(result.get_mappers()[0].validations) == 1
 
     def test_no_validators(self, executor_cfg):
         cfg = {
@@ -149,8 +148,8 @@ class TestSourceMapperConfig:
         }
         executor_cfg.get_exact_config.return_value = cfg
         result = SourceMapperConfig(executor_cfg)
-        assert result.get_mappers()
-        assert not result.get_validations()
+        assert len(result.get_mappers()) == 1
+        assert len(result.get_mappers()[0].validations) == 0
 
     def test_empty_source(self, executor_cfg):
         cfg = {

@@ -5,6 +5,7 @@ import sys
 import yaml
 from transformer.library import exceptions
 from transformer.library import common, logger, aws_service
+from transformer.validator import ValidatorConfig
 from transformer import source_mapper
 
 log = logger.set_logger(__name__)
@@ -82,34 +83,42 @@ class ExecutorConfig:
 
 @dataclasses.dataclass
 class SourceMapperConfig:
-    _validations: dict
-    _mappers = [source_mapper.AbstractDataMapper]
+    _mappers = [source_mapper.MapperConfig]
 
     def __init__(self, config: ExecutorConfig):
         self.set_mappers(config.get_exact_config())
-        self.set_validations(config.get_exact_config())
 
     def set_mappers(self, config: dict, file_format="source"):
-        mapping = {}
         mappers = []
         if file_format in config.keys():
             if config[file_format] is None:
                 raise exceptions.InvalidConfigError(f"{file_format} segment cannot be empty")
         else:
             raise exceptions.InvalidConfigError(f"{file_format} segment is missing in configuration")
+
+        has_header = True if 'header' in config[file_format].keys() else False
+        has_footer = True if 'footer' in config[file_format].keys() else False
         for segment in config[file_format]:
             names = []
             specs = []
+            validators = []
             for field in config[file_format][segment]['format']:
                 names.append(field['name'])
                 specs.append(self._converter(field['spec']))
-            mapping[segment] = {
-                'names': names,
-                'specs': specs
-            }
-            mappers.append(getattr(source_mapper, config[file_format][segment]['mapper'])(mapping[segment]))
+                if 'validators' in field.keys():
+                    for validator in field['validators']:
+                        validators.append(ValidatorConfig(validator['name'], segment, field['name'], validator['arguments']))
+            mappers.append(source_mapper.MapperConfig(
+                name=config[file_format][segment]['mapper'],
+                segment=segment,
+                names=names,
+                specs=specs,
+                skipHeader=has_header,
+                skipFooter=has_footer,
+                validations=validators
+                )
+            )
         self._mappers = mappers
-        print(len(self._mappers))
 
     def _converter(self, data: str):
         if not isinstance(data, str):
@@ -118,20 +127,6 @@ class SourceMapperConfig:
             raise ValueError('[data] must be comma seperated! eg. 1,2')
         splits = data.split(',')
         return tuple([int(splits[0].strip()), int(splits[1].strip())])
-
-    def set_validations(self, config):
-        validators = {}
-        for segment in config['source']:
-            segment_validators = []
-            for field in config['source'][segment]['format']:
-                if 'validators' in field.keys():
-                    segment_validators.append(field['validators'])
-            if len(segment_validators) > 0:
-                validators[segment] = segment_validators
-        self._validations = validators
-
-    def get_validations(self):
-        return self._validations
 
     def get_mappers(self):
         return self._mappers
@@ -187,14 +182,3 @@ class ResultConfig:
 
     def get_arguments(self) -> dict:
         return self._arguments
-
-
-class ValidatorConfig:
-    segment: str
-    field_name: str
-    arguments: dict
-
-    def __init__(self, segment: str, field_name: str, arguments=None) -> None:
-        self.segment = segment
-        self.field_name = field_name
-        self.arguments = arguments if arguments is not None else {}

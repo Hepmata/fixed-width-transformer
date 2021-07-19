@@ -30,8 +30,9 @@ class TestNricValidator:
     class TestSuccess:
         def test_nric(self, dataframes):
             config = ValidatorConfig(
-                "body",
-                "ic"
+                validator_name="",
+                segment="body",
+                field_name="ic"
             )
             validator.NricValidator(config).validate(dataframes)
 
@@ -43,8 +44,9 @@ class TestNricValidator:
                 })
             }
             config = ValidatorConfig(
-                "body",
-                "ic"
+                validator_name="",
+                segment="body",
+                field_name="ic"
             )
             with pytest.raises(ValidationError):
                 validator.NricValidator(config).validate(dfs)
@@ -62,15 +64,17 @@ class TestNaNValidator:
     class TestSuccess:
         def test_all(self, dataframes):
             config = ValidatorConfig(
-                "body",
-                "ALL"
+                validator_name="",
+                segment="body",
+                field_name="ALL"
             )
             validator.NaNValidator(config).validate(dataframes)
 
         def test_field(self, dataframes):
             config = ValidatorConfig(
-                "body",
-                "field"
+                validator_name="",
+                segment="body",
+                field_name="field"
             )
             validator.NaNValidator(config).validate(dataframes)
 
@@ -81,8 +85,9 @@ class TestNaNValidator:
                 "field2": [1, 2, 3]
             })
             config = ValidatorConfig(
-                "body",
-                "ALL"
+                validator_name="",
+                segment="body",
+                field_name="ALL"
             )
             with pytest.raises(ValidationError):
                 validator.NaNValidator(config).validate(dataframes)
@@ -93,8 +98,9 @@ class TestNaNValidator:
                 "field2": [1, 2, 3]
             })
             config = ValidatorConfig(
-                "body",
-                "field"
+                validator_name="",
+                segment="body",
+                field_name="field"
             )
             with pytest.raises(ValidationError):
                 validator.NaNValidator(config).validate(dataframes)
@@ -112,8 +118,9 @@ class TestRefValidator:
                 })
             }
             config = ValidatorConfig(
-                "body",
-                "field1",
+                validator_name="",
+                segment="body",
+                field_name="field1",
                 arguments={
                     "type": "count",
                     "ref": "footer.recordCount"
@@ -131,8 +138,9 @@ class TestRefValidator:
                 })
             }
             config = ValidatorConfig(
-                "footer",
-                "recordCount",
+                validator_name="",
+                segment="footer",
+                field_name="recordCount",
                 arguments={
                     "type": "count",
                     "ref": "body.field1"
@@ -151,8 +159,9 @@ class TestRefValidator:
                 })
             }
             config = ValidatorConfig(
-                "body",
-                "field1",
+                validator_name="",
+                segment="body",
+                field_name="field1",
                 arguments={
                     "type": "match",
                     "ref": "body.matcherField"
@@ -173,8 +182,9 @@ class TestRefValidator:
                 })
             }
             config = ValidatorConfig(
-                "body",
-                "field1",
+                validator_name="",
+                segment="body",
+                field_name="field1",
                 arguments={
                     "type": "match",
                     "ref": "match.field1"
@@ -193,8 +203,9 @@ class TestRefValidator:
                 })
             }
             config = ValidatorConfig(
-                "footer",
-                "recordCount",
+                validator_name="",
+                segment="footer",
+                field_name="recordCount",
                 arguments={
                     "type": "count",
                     "ref": "body.field1"
@@ -216,6 +227,7 @@ class TestRegexValidator:
     class TestSuccess:
         def test_regex(self, dataframes):
             config = ValidatorConfig(
+                validator_name="",
                 segment="footer",
                 field_name="field1",
                 arguments={
@@ -227,6 +239,7 @@ class TestRegexValidator:
     class TestFailure:
         def test_invalid_pattern(self, dataframes):
             config = ValidatorConfig(
+                validator_name="",
                 segment="footer",
                 field_name="field1",
                 arguments={
@@ -238,6 +251,7 @@ class TestRegexValidator:
 
         def test_missing_argument(self, dataframes):
             config = ValidatorConfig(
+                validator_name="",
                 segment="footer",
                 field_name="field1",
             )
@@ -246,6 +260,7 @@ class TestRegexValidator:
 
         def test_invalid_argument_type(self, dataframes):
             config = ValidatorConfig(
+                validator_name="",
                 segment="footer",
                 field_name="field1",
                 arguments={
@@ -257,6 +272,7 @@ class TestRegexValidator:
 
         def test_mismatch(self, dataframes):
             config = ValidatorConfig(
+                validator_name="",
                 segment="footer",
                 field_name="field1",
                 arguments={
