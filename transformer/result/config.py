@@ -21,6 +21,8 @@ class ResultFormatterConfig:
         self.mapper = config['mapper']
         self.segment_formats = {}
         self.segment_validators = []
+        if fmt not in config.keys():
+            return
         for segment in config[fmt]:
             segment_format = []
             for field in config[fmt][segment]:
@@ -53,12 +55,10 @@ class ResultFormatterConfig:
 class ResultMapperConfig:
     _result_config: dict
     segment_format: ResultFormatterConfig
-    validator: ValidatorConfig
 
     def __init__(self, config: ExecutorConfig):
         self.set_result_config(config.get_exact_config())
         self.segment_format = ResultFormatterConfig(self._result_config)
-        self.validator = ValidatorConfig(self._result_config)
 
     def set_result_config(self, config):
         try:

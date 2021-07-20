@@ -44,6 +44,15 @@ class ValidationError(Exception):
         super().__init__(msg)
 
 
+class ValidationFailureError(Exception):
+    """Concatenation of Validation errors"""
+    errors: [ValidationError]
+
+    def __init__(self, msg: str, errors: [ValidationError]):
+        self.errors = errors
+        super().__init__(msg)
+
+
 class SourceFileError(Exception):
     file_name: str
 

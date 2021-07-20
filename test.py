@@ -15,8 +15,19 @@ import pandas as pd
 # print(dfs)
 # print(concat.to_dict('records'))
 
-p = pd.DataFrame({
-    "1": [1]*5
-})
-
-print(p)
+p1 = pd.DataFrame(
+    {
+        "field1": [1,2,3],
+        "field2": [1,2,3]
+    }
+)
+p2 = pd.DataFrame(
+    {
+        "field2": [1] * 3
+    }
+)
+print(p1.columns[0])
+p1 = p1.rename(columns={p1.columns[0]: "somename"})
+l1 = pd.DataFrame({"seg1": p1.to_dict('records')})
+l2 = pd.DataFrame({"seg2": p2.to_dict('records')})
+print(pd.concat([l1,l2], axis=1).to_dict('records'))

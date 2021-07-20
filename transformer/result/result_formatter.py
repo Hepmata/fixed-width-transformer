@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import pandas as pd
 import transformer.result.generator as generator
 from transformer.result.config import ResultFormatterConfig, ResultFieldFormat
@@ -9,29 +8,68 @@ class AbstractResultFormatter:
 
 
 class DefaultArrayResultFormatter(AbstractResultFormatter):
-    def run(self, config:ResultFormatterConfig, frames: dict[str, pd.DataFrame]):
-        data = {}
-        for key in config.segment_formats:
-            d = self._map_segment(config.segment_formats[key], frames)
-            data[key] = pd.concat(d, axis=1)
-        return data
+    def run(self, config:ResultFormatterConfig, frames: dict[str, pd.DataFrame]) -> list:
+        if not config.segment_formats:
+            return self._map_default(frames)
+        else:
+            data = []
+            max_count = 0
+            for f in frames:
+                current_length = len(frames[f].index)
+                if current_length > max_count:
+                    max_count = current_length
+            for key in config.segment_formats:
+                d = self._map_segment(config.segment_formats[key], frames)
+                if len(d.index) == 1:
+                    # Multiple Content
+                    data.append(pd.DataFrame({
+                        key: d.to_dict('records') * max_count
+                    }))
+                else:
+                    data.append(pd.DataFrame({
+                        key: d.to_dict('records')
+                    }))
+            if len(data) == 1:
+                return data[0].to_dict('records')
+            else:
+                return pd.concat(data, axis=1).to_dict('records')
+
+    def _map_default(self, frames: dict[str, pd.DataFrame]):
+        data = []
+        max_count = 0
+        for f in frames:
+            current_length = len(frames[f].index)
+            if current_length > max_count:
+                max_count = current_length
+        for f in frames:
+            if len(frames[f].index) == 1:
+                # Multiple Content
+                data.append(pd.DataFrame({
+                    f: frames[f].to_dict('records') * max_count
+                }))
+            else:
+                data.append(pd.DataFrame({
+                    f: frames[f].to_dict('records')
+                }))
+        if len(data) == 1:
+            return data[0].to_dict('records')
+        else:
+            return pd.concat(data, axis=1).to_dict('records')
 
     def _map_segment(self, segment: list[ResultFieldFormat], frames):
         field_frames = []
         for field in segment:
             if "." in field.value:
                 splits = field.value.split(".")
-                field_frames.append(
-                    frames[splits[-2]][splits[-1]].to_frame()
-                )
+                f = frames[splits[-2]][splits[-1]].to_frame()
+                f = f.rename(columns={f.columns[0]: field.name})
+                field_frames.append(f)
             else:
                 count = len(field_frames[0].index)
                 generated_data = getattr(generator, field.value)().run_multiple(count)
                 field_frames.append(pd.DataFrame({field.name: generated_data}))
+        return pd.concat(field_frames, axis=1)
 
-        return field_frames
-# 
-# 
 # class JsonArrayResultMapper(AbstractResultFormatter):
 #     """
 #     This ResultMapper maps incoming dataframes and returns it as list
