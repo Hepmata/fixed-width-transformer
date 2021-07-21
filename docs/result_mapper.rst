@@ -6,19 +6,21 @@ Overview
 ========
 ResultMapper has the following capabilities:
 
-* ResultMapper: Maps Source data to Result format of your choosing
-* Generator: Generates on the fly data and adds to Result
-* Converter: Converts data to a data type of your choosing
+* Generator: Generates data to be added to the Result data
+* Converter: Converts data to a data type of your choosing.
 * Validation: PostValidation after all the above operations are completed.
+* ResultFormatter: Maps Source data to Result Format of your choosing
 
 ResultMapper
 ************
-ResultMapper is an aggregation class that collates all the above steps and executes them in the following order
+The execution of the above steps are as follows:
 
-ResultFormatter > Converter > Generator
+1. **Generator** are executed first to add data to the data array
+2. **Converter** are then executed to ensure data is in the type required. 
+3. **Validation** are then executed to validate that the data is in good order
+4. Finally, ResultFormatter generates the data in the format requested
 
-Following the 3 steps, Validations are then triggered if any is requested.
 
 ResultFormatter
 ***************
-ResultFormatter 
+ResultFormatter

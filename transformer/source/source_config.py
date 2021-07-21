@@ -1,6 +1,11 @@
 from dataclasses import dataclass
+
+from transformer.library import exceptions
+from transformer.validator import ValidatorConfig
 from transformer.library import logger
 import sys
+
+from transformer.source import source_mapper
 
 current_module = sys.modules[__name__]
 
@@ -11,8 +16,8 @@ log = logger.set_logger(__name__)
 class SourceMapperConfig:
     _mappers = [source_mapper.MapperConfig]
 
-    def __init__(self, config: ExecutorConfig):
-        self.set_mappers(config.get_exact_config())
+    def __init__(self, config: dict):
+        self.set_mappers(config)
 
     def set_mappers(self, config: dict, file_format="source"):
         mappers = []
@@ -56,29 +61,4 @@ class SourceMapperConfig:
 
     def get_mappers(self):
         return self._mappers
-
-
-
-@dataclasses.dataclass
-class ResultConfig:
-    _name: str
-    _arguments: dict
-
-    def __init__(self, config: ExecutorConfig):
-        if 'result' not in config.get_exact_config()['output'].keys():
-            raise exceptions.InvalidConfigError('result segment is missing. Please ensure configuration is provided')
-        if config.get_exact_config()['output']['result'] is None or not config.get_exact_config()['output']['result']:
-            raise exceptions.InvalidConfigError('result segment cannot be empty. Please ensure configuration is valid')
-
-        self._name = config.get_exact_config()['output']['result']['name']
-        self._arguments = {}
-        if 'arguments' in config.get_exact_config()['output']['result'].keys():
-            self._arguments = config.get_exact_config()['output']['result']['arguments']
-
-    def get_name(self) -> str:
-        return self._name
-
-    def get_arguments(self) -> dict:
-        return self._arguments
-
 

@@ -31,11 +31,14 @@ class ExecutorConfig:
             if os.environ['config_type'] == "local":
                 env_config = common.check_environment_variables(["config_name"])
                 log.info(f"Using Local Configuration file [{env_config[0]}]")
-                with open(env_config[0], 'r') as file:
-                    cfg = yaml.safe_load(file)
-                    if isinstance(cfg, dict):
-                        return cfg
-                    raise InvalidConfigError()
+                try:
+                    with open(env_config[0], 'r') as file:
+                        cfg = yaml.safe_load(file)
+                        if isinstance(cfg, dict):
+                            return cfg
+                        raise InvalidConfigError()
+                except FileNotFoundError as e:
+                    raise MissingConfigError(e)
 
             # Retrieve S3 remote config
             required_configs = ["config_bucket", "config_name"]

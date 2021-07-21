@@ -38,7 +38,7 @@ class TestResultMapper:
         """
 
         cfg = executor_config.ExecutorConfig(key=file_name, inline=text)
-        result_cfg = result_mapper.ResultMapperConfig(config=cfg)
+        result_cfg = result_mapper.ResultMapperConfig(config=cfg.get_exact_config())
         mapper = result_mapper.ResultMapper(result_cfg)
         dataframes = {
             "header": pd.DataFrame({

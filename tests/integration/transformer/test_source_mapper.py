@@ -1,10 +1,11 @@
 from tests.test_helper import generate_fw_text_line
-from transformer import config
+from transformer.executor import ExecutorConfig
 from transformer.library import exceptions
-from transformer.source import source_mapper
+from transformer.source import source_mapper, SourceMapperConfig
 import pytest
 import os
 import uuid
+
 
 class TestSourceMapper:
     @pytest.fixture(autouse=True)
@@ -51,8 +52,8 @@ class TestSourceMapper:
                     file.write("\n")
 
             # Act
-            executor_cfg = config.ExecutorConfig(key="somefile.txt",inline=cfg)
-            sm_config = config.SourceMapperConfig(executor_cfg)
+            executor_cfg = ExecutorConfig(key="somefile.txt", inline=cfg)
+            sm_config = SourceMapperConfig(executor_cfg.get_exact_config())
             dfs = {}
             print(sm_config.get_mappers())
             for mapper_cfg in sm_config.get_mappers():
@@ -102,8 +103,8 @@ class TestSourceMapper:
                     file.write("\n")
 
             # Act
-            executor_cfg = config.ExecutorConfig(key="somefile.txt", inline=cfg)
-            sm_config = config.SourceMapperConfig(executor_cfg)
+            executor_cfg = ExecutorConfig(key="somefile.txt", inline=cfg)
+            sm_config = SourceMapperConfig(executor_cfg.get_exact_config())
             dfs = {}
             print(sm_config.get_mappers())
             for mapper_cfg in sm_config.get_mappers():
@@ -147,8 +148,8 @@ class TestSourceMapper:
                     file.write("\n")
 
             # Act
-            executor_cfg = config.ExecutorConfig(key="somefile.txt", inline=cfg)
-            sm_config = config.SourceMapperConfig(executor_cfg)
+            executor_cfg = ExecutorConfig(key="somefile.txt", inline=cfg)
+            sm_config = SourceMapperConfig(executor_cfg.get_exact_config())
             dfs = {}
             with pytest.raises(exceptions.ValidationError):
                 for mapper_cfg in sm_config.get_mappers():

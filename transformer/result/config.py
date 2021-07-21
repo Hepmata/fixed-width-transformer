@@ -1,5 +1,4 @@
 import dataclasses
-from transformer.executor.executor_config import ExecutorConfig
 from transformer.library.exceptions import InvalidConfigError
 from transformer.validator.validator_config import ValidatorConfig, ValidatorFieldConfig
 
@@ -56,8 +55,8 @@ class ResultMapperConfig:
     _result_config: dict
     segment_format: ResultFormatterConfig
 
-    def __init__(self, config: ExecutorConfig):
-        self.set_result_config(config.get_exact_config())
+    def __init__(self, config: dict):
+        self.set_result_config(config)
         self.segment_format = ResultFormatterConfig(self._result_config)
 
     def set_result_config(self, config):

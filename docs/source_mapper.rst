@@ -1,23 +1,22 @@
-ResultMapper Documentation
+SourceMapper Documentation
 ==========================
-Hello! In this section, we will cover the documentation about ResultMapper
+In this section, we will cover the documentation about SourceMapper
 
 Overview
 ========
-ResultMapper has the following capabilities:
+SourceMapper has the following capabilities:
 
-* ResultMapper: Maps Source data to Result format of your choosing
-* Generator: Generates on the fly data and adds to Result
-* Converter: Converts data to a data type of your choosing
+* SourceFormatter: Maps Source data to Result format of your choosing
 * Validation: PostValidation after all the above operations are completed.
+* Converter: Trims away all whitespaces in all data unless overridden in config.
 
-ResultMapper
+SourceMapper
 ************
-ResultMapper is an aggregation class that collates all the above steps and executes them in the following order
-
-ResultFormatter > Converter > Generator
-
-Following the 3 steps, Validations are then triggered if any is requested.
+The execution of the above steps are as follows:
+1. SourceFormatter to convert data from File to DataFrames
+2. A NaN validation is then applied by default. To prevent this behaviour, provide an override in the config
+3. Custom Validations are then executed if provided. Else this section will be skipped
+4. Default Converter is then executed to trim away all whitespaces in DataFrames. To prevent this behaviour, provide and override in the config
 
 ResultFormatter
 ***************
