@@ -1,5 +1,7 @@
 import unittest.mock
 
+import yaml
+
 from transformer.executor import ExecutorConfig, LambdaFixedWidthExecutor
 from tests.test_helper import generate_fw_text_line
 import pytest
@@ -15,8 +17,15 @@ class TestLambdaFixedWidthExecutor:
         if os.path.exists(source_file_name):
             os.remove(source_file_name)
 
+    @pytest.fixture
+    def cfg_file(self):
+        source_file_name = f"fw_file-{uuid.uuid4().__str__()}.txt"
+        yield source_file_name
+        if os.path.exists(source_file_name):
+            os.remove(source_file_name)
+
     @unittest.mock.patch('os.environ', {'config_type': 'local', 'config_name': 'hotload_cfg.yml'})
-    def test_with_result_format(self, file_name):
+    def test_with_result_format(self, file_name, cfg_file, mocker):
         text = f"""
         files:
             File 1:
@@ -74,6 +83,8 @@ class TestLambdaFixedWidthExecutor:
                 file.write("\n")
             file.write(generate_fw_text_line(footer_values, footer_spacing))
             file.write("\n")
-
+        
+        with(open(file_name, 'w')) as file:
+            yaml.dump(yaml.load(text), )
         config = ExecutorConfig(inline=text, key=file_name)
         results = LambdaFixedWidthExecutor().run(key=file_name, bucket="")
