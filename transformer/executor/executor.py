@@ -29,7 +29,7 @@ class LambdaFixedWidthExecutor(AbstractExecutor):
         )
         # 3. Run SourceMapper
         # Compulsory Segment
-        src_mapper = SourceMapperConfig(config=cls)
+        src_mapper = SourceMapperConfig(config=cls.get_exact_config())
         dataframes = {}
         for mapping in src_mapper.get_mappers():
             dataframes[mapping.segment] = getattr(source_mapper, mapping.name)().run(mapping, file)
