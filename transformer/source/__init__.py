@@ -1,1 +1,1 @@
-from transformer.source.source_config import SourceMapperConfig
+from transformer.source.source_config import SourceMapperConfig, SourceFormatterConfig

@@ -1,6 +1,7 @@
 from transformer.library import logger
 from transformer.library.exceptions import SourceFileError
 from transformer.decorators import PreValidate
+from transformer.source.source_config import SourceMapperConfig
 import dataclasses
 from io import StringIO
 import pandas as pd
@@ -8,63 +9,12 @@ import pandas as pd
 log = logger.set_logger(__name__)
 
 
-@dataclasses.dataclass
-class MapperConfig:
-    name: str
-    segment: str
-    names: list
-    specs: list
-    skipHeader: bool
-    skipFooter: bool
-    validations: list
-
-
-class AbstractDataMapper:
-    def run(self, config: MapperConfig, file_name: str) -> pd.DataFrame: pass
-
-
-class HeaderDataMapper(AbstractDataMapper):
-    @PreValidate
-    def run(self, config: MapperConfig, file_name: str) -> pd.DataFrame:
-        try:
-            data = pd.read_fwf(file_name, colspecs=config.specs, names=config.names,
-                               converters={h: str for h in config.names}, delimiter="\n\t", nrows=1)
-            if len(data.index) == 0:
-                raise SourceFileError("Invalid Source File, Index is empty", file_name)
-            return data
-        except FileNotFoundError as e:
-            raise SourceFileError(e, file_name)
-
-
-class BodyDataMapper(AbstractDataMapper):
-    @PreValidate
-    def run(self, config: MapperConfig, file_name: str) -> pd.DataFrame:
-        header = 0 if config.skipHeader else None
-        footer = 1 if config.skipFooter else 0
-        try:
-            data = pd.read_fwf(file_name, colspecs=config.specs, header=header,
-                               names=config.names,
-                               converters={h: str for h in config.names}, skipfooter=footer,
-                               delimiter="\n\t")
-            if len(data.index) == 0:
-                raise SourceFileError("Invalid Source File, Index is empty", file_name)
-            return data
-        except FileNotFoundError as e:
-            raise SourceFileError(e, file_name)
-
-
-class FooterDataMapper(AbstractDataMapper):
-    @PreValidate
-    def run(self, config: MapperConfig, file_name: str) -> pd.DataFrame:
-        try:
-            with open(file_name, 'r') as lines:
-                read = lines.readlines()
-                if len(read) == 0:
-                    raise SourceFileError("Invalid Source File, Index is empty", file_name)
-                last_line = read[-1]
-                data = pd.read_fwf(StringIO(last_line), colspecs=config.specs,
-                                   names=config.names,
-                                   converters={h: str for h in config.names}, delimiter="\n\t")
-                return data
-        except FileNotFoundError as e:
-            raise SourceFileError(e, file_name)
+class SourceMapper:
+    def run(self, config: SourceMapperConfig):
+        """
+        The execution of the above steps are as follows:
+        1. SourceFormatter to convert data from File to DataFrames
+        2. A NaN validation is then applied by default. To prevent this behaviour, provide an override in the config
+        3. Custom Validations are then executed if provided. Else this section will be skipped
+        4. Default Converter is then executed to trim away all whitespaces in DataFrames. To prevent this behaviour, provide and override in the config
+        """

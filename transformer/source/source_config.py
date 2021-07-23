@@ -13,8 +13,19 @@ log = logger.set_logger(__name__)
 
 
 @dataclass
+class SourceFormatterConfig:
+    name: str
+    segment: str
+    names: list
+    specs: list
+    skipHeader: bool
+    skipFooter: bool
+    validations: list
+
+@dataclass
 class SourceMapperConfig:
-    _mappers = [source_mapper.MapperConfig]
+    mappers = [SourceFormatterConfig]
+    validations = ValidatorConfig
 
     def __init__(self, config: dict):
         self.set_mappers(config)

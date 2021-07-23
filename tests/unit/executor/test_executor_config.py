@@ -5,8 +5,8 @@ from unittest.mock import MagicMock
 import pytest
 import yaml
 from transformer.library import exceptions
-
 from transformer.executor import ExecutorConfig
+
 
 class TestExecutorConfig:
     shared_good_key = "somefile.txt"
