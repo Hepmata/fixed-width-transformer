@@ -2,7 +2,7 @@ import sys
 import pandas as pd
 import transformer.result.result_formatter as fmt
 from transformer.validator import validator
-from transformer.result.config import ResultMapperConfig, ResultFormatterConfig
+from transformer.result.result_config import ResultMapperConfig, ResultFormatterConfig
 from transformer.library.exceptions import ValidationError, ValidationFailureError
 
 current_module = sys.modules[__name__]

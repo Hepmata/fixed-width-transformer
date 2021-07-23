@@ -1,4 +1,4 @@
-from transformer.config import ResultConfig
+from transformer.result.result_config import ResultConfig
 from transformer.library import logger, aws_service
 from transformer.library.kafka_service import send_messages
 

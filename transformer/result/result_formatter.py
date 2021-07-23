@@ -1,6 +1,6 @@
 import pandas as pd
 import transformer.result.generator as generator
-from transformer.result.config import ResultFormatterConfig, ResultFieldFormat
+from transformer.result.result_config import ResultFormatterConfig, ResultFieldFormat
 
 
 class AbstractResultFormatter:

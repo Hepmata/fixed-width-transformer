@@ -24,31 +24,40 @@ class TestLambdaFixedWidthExecutor:
         if os.path.exists(source_file_name):
             os.remove(source_file_name)
 
-    @unittest.mock.patch('os.environ', {'config_type': 'local', 'config_name': 'hotload_cfg.yml'})
     def test_with_result_format(self, file_name, cfg_file, mocker):
+        unittest.mock.patch.dict('os.environ', {'config_type': 'local', 'config_name': cfg_file}).start()
+        mocker.patch('transformer.library.aws_service.download_s3_file').return_value = file_name
         text = f"""
         files:
             File 1:
                 pattern: ^{file_name}$
                 source:
-                    format:
-                        header:
+                    header:
+                        mapper: HeaderDataMapper
+                        format:
                             - name: header1
                               spec: 0,1
                             - name: header2
                               spec: 1,5
                             - name: header3
                               spec: 5,20
-                        body:
+                    body:
+                        mapper: BodyDataMapper
+                        format:
                             - name: body1
                               spec: 0,1
                             - name: body2
                               spec: 1,5
-                        footer:
+                    footer:
+                        mapper: FooterDataMapper
+                        format:
                             - name: footer1
                               spec: 0, 5
                 output:
-                    result: pass
+                    result:
+                        name: ConsoleResult
+                        arguments:
+                            arg1: test
                     mapper: DefaultArrayResultFormatter
                     format:
                         metadata:
@@ -83,8 +92,7 @@ class TestLambdaFixedWidthExecutor:
                 file.write("\n")
             file.write(generate_fw_text_line(footer_values, footer_spacing))
             file.write("\n")
-        
-        with(open(file_name, 'w')) as file:
-            yaml.dump(yaml.load(text), )
-        config = ExecutorConfig(inline=text, key=file_name)
+
+        with(open(cfg_file, 'w')) as file:
+            yaml.dump(yaml.load(text), file)
         results = LambdaFixedWidthExecutor().run(key=file_name, bucket="")

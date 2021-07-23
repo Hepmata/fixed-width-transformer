@@ -70,3 +70,19 @@ class ResultMapperConfig:
 
     def get_result_config(self):
         return self._result_config
+
+
+@dataclasses.dataclass()
+class ResultConfig:
+    name: dict
+    arguments: dict
+
+    def __init__(self, config: dict):
+        self.name = config['output']['result']['name']
+        self.arguments = config['output']['result']['arguments']
+
+    def get_arguments(self):
+        return self.arguments
+
+    def get_name(self):
+        return self.name
