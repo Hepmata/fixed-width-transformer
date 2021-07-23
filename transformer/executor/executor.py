@@ -47,6 +47,6 @@ class LambdaFixedWidthExecutor(AbstractExecutor):
         # 6. Return Result
         return ResultResponse(destination={})
 
-# 
+
 # class FixedWidthExecutor(AbstractExecutor):
 #     pass
