@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from transformer.converter import ConverterConfig, converters
+from transformer.converter import ConverterConfig, converter
 from transformer.library.exceptions import ConversionError
 
 
@@ -10,7 +10,7 @@ class TestStrConverter:
         def test_int_to_str(self):
             config = ConverterConfig(
                 segment="body",
-                fieldName="test1",
+                field_name="test1",
                 name="StrConverter"
             )
             dataframes = {
@@ -19,16 +19,16 @@ class TestStrConverter:
                     "test1": [1, 2, 3, 4, 5]
                 })
             }
-            results = converters.StrConverter(config).run(dataframes)
+            results = converter.StrConverter(config).run(dataframes)
             print(results)
-            assert len(results.index) == len(dataframes[config.segment][config.fieldName].index)
+            assert len(results.index) == len(dataframes[config.segment][config.field_name].index)
             for f in results:
                 assert isinstance(f, str)
 
         def test_float_to_int(self):
             config = ConverterConfig(
                 segment="body",
-                fieldName="test1",
+                field_name="test1",
                 name="StrConverter"
             )
             dataframes = {
@@ -37,16 +37,16 @@ class TestStrConverter:
                     "test1": [1.0, 2.0, 3.0, 4.0, 5.0]
                 })
             }
-            results = converters.StrConverter(config).run(dataframes)
+            results = converter.StrConverter(config).run(dataframes)
             print(results)
-            assert len(results.index) == len(dataframes[config.segment][config.fieldName].index)
+            assert len(results.index) == len(dataframes[config.segment][config.field_name].index)
             for f in results:
                 assert isinstance(f, str)
 
         def test_str_to_str(self):
             config = ConverterConfig(
                 segment="body",
-                fieldName="test1",
+                field_name="test1",
                 name="StrConverter"
             )
             dataframes = {
@@ -55,17 +55,17 @@ class TestStrConverter:
                     "test1": ["lalala", "lololol", "lelelele"]
                 })
             }
-            results = converters.StrConverter(config).run(dataframes)
+            results = converter.StrConverter(config).run(dataframes)
             print(results)
 
-            assert len(results.index) == len(dataframes[config.segment][config.fieldName].index)
+            assert len(results.index) == len(dataframes[config.segment][config.field_name].index)
             for f in results:
                 assert isinstance(f, str)
 
         def test_escaped_str_to_str(self):
             config = ConverterConfig(
                 segment="body",
-                fieldName="test1",
+                field_name="test1",
                 name="StrConverter"
             )
             dataframes = {
@@ -74,10 +74,10 @@ class TestStrConverter:
                     "test1": ["\"asda\"\"asdasd", "\"asd\"\"asdlololol", "lelelele"]
                 })
             }
-            results = converters.StrConverter(config).run(dataframes)
+            results = converter.StrConverter(config).run(dataframes)
             print(results)
 
-            assert len(results.index) == len(dataframes[config.segment][config.fieldName].index)
+            assert len(results.index) == len(dataframes[config.segment][config.field_name].index)
             for f in results:
                 assert isinstance(f, str)
 
@@ -86,7 +86,7 @@ class TestNumberConverter:
         def test_str_to_int(self):
             config = ConverterConfig(
                 segment="body",
-                fieldName="field1",
+                field_name="field1",
                 name="IntConverter"
             )
             dataframes = {
@@ -94,16 +94,16 @@ class TestNumberConverter:
                     "field1": ["1", "2", "3", "4", "5"]
                 })
             }
-            results = converters.NumberConverter(config).run(dataframes)
+            results = converter.NumberConverter(config).run(dataframes)
             print(results)
-            assert len(results.index) == len(dataframes[config.segment][config.fieldName].index)
+            assert len(results.index) == len(dataframes[config.segment][config.field_name].index)
             for f in results:
                 assert isinstance(f, int)
         
         def test_str_to_float(self):
             config = ConverterConfig(
                 segment="body",
-                fieldName="field1",
+                field_name="field1",
                 name="IntConverter"
             )
             dataframes = {
@@ -111,16 +111,16 @@ class TestNumberConverter:
                     "field1": ["1.0", "2.0", "3.0", "4.0", "5.0"]
                 })
             }
-            results = converters.NumberConverter(config).run(dataframes)
+            results = converter.NumberConverter(config).run(dataframes)
             print(results)
-            assert len(results.index) == len(dataframes[config.segment][config.fieldName].index)
+            assert len(results.index) == len(dataframes[config.segment][config.field_name].index)
             for f in results:
                 assert isinstance(f, float)
 
         def test_invalid_to_int(self):
             config = ConverterConfig(
                 segment="body",
-                fieldName="field1",
+                field_name="field1",
                 name="IntConverter"
             )
             dataframes = {
@@ -129,12 +129,12 @@ class TestNumberConverter:
                 })
             }
             with pytest.raises(ConversionError):
-                converters.NumberConverter(config).run(dataframes)
+                converter.NumberConverter(config).run(dataframes)
         
         def test_invalid_to_float(self):
             config = ConverterConfig(
                 segment="body",
-                fieldName="field1",
+                field_name="field1",
                 name="IntConverter"
             )
             dataframes = {
@@ -143,4 +143,4 @@ class TestNumberConverter:
                 })
             }
             with pytest.raises(ConversionError):
-                converters.NumberConverter(config).run(dataframes)
+                converter.NumberConverter(config).run(dataframes)

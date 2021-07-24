@@ -4,5 +4,5 @@ from dataclasses import dataclass
 @dataclass()
 class ConverterConfig:
     segment: str
-    fieldName: str
+    field_name: str
     name: str

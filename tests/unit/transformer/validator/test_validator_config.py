@@ -11,16 +11,16 @@ class TestValidatorConfig:
 
             cfg = ValidatorConfig("test", "test", [f])
 
-            assert len(cfg.validations) == 1
+            assert len(cfg.validators) == 1
             assert cfg
 
         def test_without_arguments(self):
             f = ValidatorFieldConfig("test", {})
             cfg = ValidatorConfig("test", "test", [f])
-            assert len(cfg.validations) == 1
+            assert len(cfg.validators) == 1
             assert cfg
 
         def test_without_validations(self):
             cfg = ValidatorConfig("test", "test", [])
-            assert len(cfg.validations) == 0
+            assert len(cfg.validators) == 0
             assert cfg

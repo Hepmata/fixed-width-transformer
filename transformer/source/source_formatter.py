@@ -1,6 +1,7 @@
 from transformer.library import logger
 from transformer.library.exceptions import SourceFileError
 from transformer.decorators import PreValidate
+from transformer.source import SourceFormatterConfig
 import dataclasses
 from io import StringIO
 import pandas as pd
@@ -8,13 +9,11 @@ import pandas as pd
 log = logger.set_logger(__name__)
 
 
-
-
 class AbstractDataMapper:
     def run(self, config: SourceFormatterConfig, file_name: str) -> pd.DataFrame: pass
 
 
-class HeaderDataMapper(AbstractDataMapper):
+class HeaderSourceFormatter(AbstractDataMapper):
     def run(self, config: SourceFormatterConfig, file_name: str) -> pd.DataFrame:
         try:
             data = pd.read_fwf(file_name, colspecs=config.specs, names=config.names,
@@ -26,7 +25,7 @@ class HeaderDataMapper(AbstractDataMapper):
             raise SourceFileError(e, file_name)
 
 
-class BodyDataMapper(AbstractDataMapper):
+class BodySourceFormatter(AbstractDataMapper):
     def run(self, config: SourceFormatterConfig, file_name: str) -> pd.DataFrame:
         header = 0 if config.skipHeader else None
         footer = 1 if config.skipFooter else 0
@@ -42,7 +41,7 @@ class BodyDataMapper(AbstractDataMapper):
             raise SourceFileError(e, file_name)
 
 
-class FooterDataMapper(AbstractDataMapper):
+class FooterSourceFormatter(AbstractDataMapper):
     def run(self, config: SourceFormatterConfig, file_name: str) -> pd.DataFrame:
         try:
             with open(file_name, 'r') as lines:

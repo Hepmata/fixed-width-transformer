@@ -11,5 +11,5 @@ class ValidatorFieldConfig:
 class ValidatorConfig:
     segment: str
     field_name: str
-    validations: [ValidatorFieldConfig]
+    validators: [ValidatorFieldConfig]
 

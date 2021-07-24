@@ -35,7 +35,7 @@ class ResultMapper:
     def _validate(self, config: ResultFormatterConfig, frames: dict[str, pd.DataFrame]):
         errors = []
         for segment_validator in config.segment_validators:
-            for vld in segment_validator.validations:
+            for vld in segment_validator.validators:
                 try:
                     getattr(validator, vld.name)().validate(segment_validator.segment, segment_validator.field_name, vld.arguments, frames)
                 except ValidationError as v:

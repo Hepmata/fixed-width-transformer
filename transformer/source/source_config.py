@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 
 from transformer.library import exceptions
-from transformer.validator import ValidatorConfig
+from transformer.validator import ValidatorConfig, ValidatorFieldConfig
+from transformer.converter import ConverterConfig
 from transformer.library import logger
 import sys
 
-from transformer.source import source_mapper
 
 current_module = sys.modules[__name__]
 
@@ -22,15 +22,21 @@ class SourceFormatterConfig:
     skipFooter: bool
     validations: list
 
+
 @dataclass
 class SourceMapperConfig:
     mappers = [SourceFormatterConfig]
-    validations = ValidatorConfig
+    validators = [ValidatorConfig]
+    converters = [ConverterConfig]
 
     def __init__(self, config: dict):
-        self.set_mappers(config)
+        print(config)
+        self.mappers = []
+        self.validators = []
+        self.converters = []
+        self.configure(config)
 
-    def set_mappers(self, config: dict, file_format="source"):
+    def configure(self, config: dict, file_format="source"):
         mappers = []
         if file_format in config.keys():
             if config[file_format] is None:
@@ -46,11 +52,26 @@ class SourceMapperConfig:
             validators = []
             for field in config[file_format][segment]['format']:
                 names.append(field['name'])
-                specs.append(self._converter(field['spec']))
+                specs.append(_converter(field['spec']))
                 if 'validators' in field.keys():
+                    field_validators = []
                     for validator in field['validators']:
-                        validators.append(ValidatorConfig(validator['name'], segment, field['name'], validator['arguments']))
-            mappers.append(source_mapper.MapperConfig(
+                        args = validator['arguments'] if 'arguments' in validator.keys() else None
+                        field_validators.append(ValidatorFieldConfig(validator['name'], args))
+                    self.validators.append(ValidatorConfig(
+                        segment=segment,
+                        field_name=field['name'],
+                        validators=field_validators
+                    ))
+                if 'converter' in field.keys():
+                    if not isinstance(field['converter'], str):
+                        raise exceptions.InvalidConfigError("Field [converter] must be of str type.")
+                    self.converters.append(ConverterConfig(
+                        segment=segment,
+                        field_name=field['name'],
+                        name=field['converter']
+                    ))
+            mappers.append(SourceFormatterConfig(
                 name=config[file_format][segment]['mapper'],
                 segment=segment,
                 names=names,
@@ -60,16 +81,22 @@ class SourceMapperConfig:
                 validations=validators
                 )
             )
-        self._mappers = mappers
-
-    def _converter(self, data: str):
-        if not isinstance(data, str):
-            raise ValueError("Invalid Type for input [data]")
-        if ',' not in data:
-            raise ValueError('[data] must be comma seperated! eg. 1,2')
-        splits = data.split(',')
-        return tuple([int(splits[0].strip()), int(splits[1].strip())])
+        self.mappers = mappers
 
     def get_mappers(self):
-        return self._mappers
+        return self.mappers
 
+    def get_converters(self):
+        return self.converters
+
+    def get_validators(self):
+        return self.validators
+
+
+def _converter(data: str):
+    if not isinstance(data, str):
+        raise ValueError("Invalid Type for input [data]")
+    if ',' not in data:
+        raise ValueError('[data] must be comma seperated! eg. 1,2')
+    splits = data.split(',')
+    return tuple([int(splits[0].strip()), int(splits[1].strip())])

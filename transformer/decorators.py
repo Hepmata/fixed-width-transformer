@@ -11,7 +11,7 @@ class PreValidate(object):
         print("----Running PreValidations----")
         results = {cfg.segment: self.run(self, cfg, file_name)}
         failed_validations = []
-        for val_config in cfg.validations:
+        for val_config in cfg.validators:
             try:
                 getattr(validator, val_config.validator_name)(val_config).validate(results)
             except ValidationError as e:

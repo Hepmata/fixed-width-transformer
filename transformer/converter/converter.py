@@ -17,7 +17,7 @@ class StrConverter(AbstractConverter):
         super().__init__(config)
 
     def run(self, frames: dict[str, pd.DataFrame]) -> pd.Series:
-        return frames[self.config.segment][self.config.fieldName].astype(str)
+        return frames[self.config.segment][self.config.field_name].astype(str)
 
 
 class NumberConverter(AbstractConverter):
@@ -26,6 +26,6 @@ class NumberConverter(AbstractConverter):
 
     def run(self, frames: dict[str, pd.DataFrame]) -> pd.Series:
         try:
-            return pd.to_numeric(frames[self.config.segment][self.config.fieldName])
+            return pd.to_numeric(frames[self.config.segment][self.config.field_name])
         except ValueError as e:
-            raise ConversionError(msg=e, segment=self.config.segment, field_name=self.config.fieldName)
+            raise ConversionError(msg=e, segment=self.config.segment, field_name=self.config.field_name)
