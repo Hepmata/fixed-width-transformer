@@ -17,7 +17,7 @@ class TestSourceMapperConfig:
                 }
             }
         }
-        config = source_config.SourceMapperConfig(config_dict)
+        config = source_config.SourceMapperConfig(config_dict, "asd")
         print(config.get_converters())
         assert len(config.get_mappers()) == 1
         assert len(config.get_converters()) == 0
@@ -59,7 +59,7 @@ class TestSourceMapperConfig:
                 }
             }
         }
-        config = source_config.SourceMapperConfig(config_dict)
+        config = source_config.SourceMapperConfig(config_dict, "asd")
         assert len(config.get_mappers()) == 1
         assert len(config.get_converters()) == 0
         assert len(config.get_validators()) == 2
@@ -99,7 +99,7 @@ class TestSourceMapperConfig:
                 }
             }
         }
-        config = source_config.SourceMapperConfig(config_dict)
+        config = source_config.SourceMapperConfig(config_dict, "asd")
         assert len(config.get_mappers()) == 2
         assert len(config.get_converters()) == 3
         assert len(config.get_validators()) == 0
@@ -141,7 +141,7 @@ class TestSourceMapperConfig:
                 }
             }
         }
-        config = source_config.SourceMapperConfig(config_dict)
+        config = source_config.SourceMapperConfig(config_dict, "asd")
         assert len(config.get_mappers()) == 1
         assert len(config.get_converters()) == 1
         assert len(config.get_validators()) == 2

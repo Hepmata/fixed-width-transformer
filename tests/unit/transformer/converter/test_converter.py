@@ -19,7 +19,7 @@ class TestStrConverter:
                     "test1": [1, 2, 3, 4, 5]
                 })
             }
-            results = converter.StrConverter(config).run(dataframes)
+            results = converter.StrConverter().run(config,dataframes[config.segment][config.field_name])
             print(results)
             assert len(results.index) == len(dataframes[config.segment][config.field_name].index)
             for f in results:
@@ -37,7 +37,7 @@ class TestStrConverter:
                     "test1": [1.0, 2.0, 3.0, 4.0, 5.0]
                 })
             }
-            results = converter.StrConverter(config).run(dataframes)
+            results = converter.StrConverter().run(config,dataframes[config.segment][config.field_name])
             print(results)
             assert len(results.index) == len(dataframes[config.segment][config.field_name].index)
             for f in results:
@@ -55,7 +55,7 @@ class TestStrConverter:
                     "test1": ["lalala", "lololol", "lelelele"]
                 })
             }
-            results = converter.StrConverter(config).run(dataframes)
+            results = converter.StrConverter().run(config,dataframes[config.segment][config.field_name])
             print(results)
 
             assert len(results.index) == len(dataframes[config.segment][config.field_name].index)
@@ -74,12 +74,13 @@ class TestStrConverter:
                     "test1": ["\"asda\"\"asdasd", "\"asd\"\"asdlololol", "lelelele"]
                 })
             }
-            results = converter.StrConverter(config).run(dataframes)
+            results = converter.StrConverter().run(config,dataframes[config.segment][config.field_name])
             print(results)
 
             assert len(results.index) == len(dataframes[config.segment][config.field_name].index)
             for f in results:
                 assert isinstance(f, str)
+
 
 class TestNumberConverter:
     class TestSuccess:
@@ -94,12 +95,12 @@ class TestNumberConverter:
                     "field1": ["1", "2", "3", "4", "5"]
                 })
             }
-            results = converter.NumberConverter(config).run(dataframes)
+            results = converter.NumberConverter().run(config, dataframes[config.segment][config.field_name])
             print(results)
             assert len(results.index) == len(dataframes[config.segment][config.field_name].index)
             for f in results:
                 assert isinstance(f, int)
-        
+
         def test_str_to_float(self):
             config = ConverterConfig(
                 segment="body",
@@ -111,7 +112,7 @@ class TestNumberConverter:
                     "field1": ["1.0", "2.0", "3.0", "4.0", "5.0"]
                 })
             }
-            results = converter.NumberConverter(config).run(dataframes)
+            results = converter.NumberConverter().run(config,dataframes[config.segment][config.field_name])
             print(results)
             assert len(results.index) == len(dataframes[config.segment][config.field_name].index)
             for f in results:
@@ -129,8 +130,8 @@ class TestNumberConverter:
                 })
             }
             with pytest.raises(ConversionError):
-                converter.NumberConverter(config).run(dataframes)
-        
+                converter.NumberConverter().run(config,dataframes[config.segment][config.field_name])
+
         def test_invalid_to_float(self):
             config = ConverterConfig(
                 segment="body",
@@ -143,4 +144,4 @@ class TestNumberConverter:
                 })
             }
             with pytest.raises(ConversionError):
-                converter.NumberConverter(config).run(dataframes)
+                converter.NumberConverter().run(config,dataframes[config.segment][config.field_name])

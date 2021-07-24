@@ -4,28 +4,17 @@ from transformer.library.exceptions import ConversionError
 
 
 class AbstractConverter:
-    config: ConverterConfig
-
-    def __init__(self, config: ConverterConfig):
-        self.config = config
-
-    def run(self, frames: dict[str, pd.DataFrame]) -> pd.Series: pass
+    def run(self, config: ConverterConfig, series: pd.Series) -> pd.Series: pass
 
 
 class StrConverter(AbstractConverter):
-    def __init__(self, config: ConverterConfig):
-        super().__init__(config)
-
-    def run(self, frames: dict[str, pd.DataFrame]) -> pd.Series:
-        return frames[self.config.segment][self.config.field_name].astype(str)
+    def run(self, config: ConverterConfig, series: pd.Series) -> pd.Series:
+        return series.astype(str)
 
 
 class NumberConverter(AbstractConverter):
-    def __init__(self, config: ConverterConfig):
-        super().__init__(config)
-
-    def run(self, frames: dict[str, pd.DataFrame]) -> pd.Series:
+    def run(self, config: ConverterConfig, series: pd.Series) -> pd.Series:
         try:
-            return pd.to_numeric(frames[self.config.segment][self.config.field_name])
+            return pd.to_numeric(series)
         except ValueError as e:
-            raise ConversionError(msg=e, segment=self.config.segment, field_name=self.config.field_name)
+            raise ConversionError(msg=str(e), segment=config.segment, field_name=config.field_name)

@@ -25,15 +25,17 @@ class SourceFormatterConfig:
 
 @dataclass
 class SourceMapperConfig:
-    mappers = [SourceFormatterConfig]
-    validators = [ValidatorConfig]
-    converters = [ConverterConfig]
+    mappers: [SourceFormatterConfig]
+    validators: [ValidatorConfig]
+    converters: [ConverterConfig]
+    file_name: str
 
-    def __init__(self, config: dict):
+    def __init__(self, config: dict, file_name: str):
         print(config)
         self.mappers = []
         self.validators = []
         self.converters = []
+        self.file_name = file_name
         self.configure(config)
 
     def configure(self, config: dict, file_format="source"):
