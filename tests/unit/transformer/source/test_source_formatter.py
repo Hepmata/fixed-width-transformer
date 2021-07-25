@@ -1,9 +1,9 @@
 import os
 import uuid
-from tests.test_helper import generate_fw_text_line
+from tests.test_helper import generate_fw_text_line, generate_file_data
 import pytest
 
-from transformer.source.source_formatter import HeaderSourceFormatter, BodySourceFormatter, FooterSourceFormatter, SourceFormatterConfig
+from transformer.source.source_formatter import HeaderSourceFormatter, BodySourceFormatter, FooterSourceFormatter, SourceFormatterConfig, BodyOnlySourceFormatter
 from transformer.library.exceptions import SourceFileError
 
 
@@ -22,7 +22,6 @@ class TestHeaderSourceFormatter:
             file.write(generate_fw_text_line(values, spacing))
         config = SourceFormatterConfig(
             name="HeaderSourceFormatter",
-            validations=[],
             segment='header',
             names=["field1", "field2"],
             specs=[(0, 10), (10, 20)],
@@ -35,7 +34,6 @@ class TestHeaderSourceFormatter:
     def test_nan(self, file_name):
         config = SourceFormatterConfig(
             name="HeaderSourceFormatter",
-            validations=[],
             segment='header',
             names=["field1", "field2"],
             specs=[(0, 10), (50, 60)]
@@ -52,7 +50,6 @@ class TestHeaderSourceFormatter:
     def test_empty_file(self, file_name):
         config = SourceFormatterConfig(
             name="HeaderSourceFormatter",
-            validations=[],
             segment='header',
             names=["field1", "field2"],
             specs=[(0, 10), (10, 20)],
@@ -65,7 +62,6 @@ class TestHeaderSourceFormatter:
     def test_missing_file(self, file_name):
         config = SourceFormatterConfig(
             name="HeaderSourceFormatter",
-            validations=[],
             segment='header',
             names=["field1", "field2"],
             specs=[(0, 10), (10, 20)],
@@ -125,7 +121,6 @@ class TestBodySourceFormatter:
     def test_empty_file(self, file_name):
         config = SourceFormatterConfig(
             name="BodySourceFormatter",
-            validations=[],
             segment='body',
             names=["field1", "field2", "field3"],
             specs=[(0, 10), (10, 20), (50, 51)],
@@ -138,7 +133,6 @@ class TestBodySourceFormatter:
     def test_missing_file(self, file_name):
         config = SourceFormatterConfig(
             name="BodySourceFormatter",
-            validations=[],
             segment='body',
             names=["field1", "field2", "field3"],
             specs=[(0, 10), (10, 20), (50, 51)],
@@ -158,7 +152,6 @@ class TestFooterSourceFormatter:
     def test_header(self, file_name):
         config = SourceFormatterConfig(
             name="FooterSourceFormatter",
-            validations=[],
             segment='footer',
             names=["field1", "field2"],
             specs=[(0, 10), (10, 20)],
@@ -176,7 +169,6 @@ class TestFooterSourceFormatter:
     def test_nan(self, file_name):
         config = SourceFormatterConfig(
             name="FooterSourceFormatter",
-            validations=[],
             segment='footer',
             names=["field1", "field2"],
             specs=[(0, 10), (50, 60)],
@@ -193,7 +185,6 @@ class TestFooterSourceFormatter:
     def test_empty_file(self, file_name):
         config = SourceFormatterConfig(
             name="FooterSourceFormatter",
-            validations=[],
             segment='footer',
             names=["field1", "field2"],
             specs=[(0, 10), (50, 60)],
@@ -206,10 +197,57 @@ class TestFooterSourceFormatter:
     def test_missing_file(self, file_name):
         config = SourceFormatterConfig(
             name="FooterSourceFormatter",
-            validations=[],
             segment='footer',
             names=["field1", "field2"],
             specs=[(0, 10), (50, 60)],
         )
         with pytest.raises(SourceFileError):
             FooterSourceFormatter().run(config, file_name)
+
+
+class TestBodyOnlySourceFormatter:
+    @pytest.fixture(autouse=True)
+    def file_name(self):
+        source_file_name = f"fw_file-{uuid.uuid4().__str__()}.txt"
+        yield source_file_name
+        if os.path.exists(source_file_name):
+            os.remove(source_file_name)
+
+    def test_success(self, file_name):
+        config = SourceFormatterConfig(
+            name="BodyOnlySourceFormatter",
+            segment="body",
+            names=["field1", "field2"],
+            specs=[(0, 10), (10, 20)],
+        )
+        file_data = {
+            "body": {
+                "values": [["X1", "X2"], ["Y1", "Y2"], ["Z1", "Z2"]],
+                "spacing": [10, 10]
+            }
+        }
+        generate_file_data(file_name, file_data)
+        df = BodyOnlySourceFormatter().run(config, file_name)
+        assert len(df.index) == len(file_data['body']['values'])
+    
+    def test_empty_file(self, file_name):
+        config = SourceFormatterConfig(
+            name="BodyOnlySourceFormatter",
+            segment='body',
+            names=["field1", "field2"],
+            specs=[(0, 10), (10, 20)],
+        )
+        with open(file_name, 'w'):
+            pass
+        with pytest.raises(SourceFileError):
+            BodyOnlySourceFormatter().run(config, file_name)
+
+    def test_missing_file(self, file_name):
+        config = SourceFormatterConfig(
+            name="BodySourceFormatter",
+            segment='body',
+            names=["field1", "field2"],
+            specs=[(0, 10), (10, 20)],
+        )
+        with pytest.raises(SourceFileError):
+            BodyOnlySourceFormatter().run(config, file_name)
