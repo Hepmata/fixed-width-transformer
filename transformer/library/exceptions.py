@@ -44,6 +44,25 @@ class ValidationError(Exception):
         super().__init__(msg)
 
 
+class ConversionError(Exception):
+    segment: str
+    field_name: str
+
+    def __init__(self, msg: str, segment: str, field_name: str):
+        self.segment = segment
+        self.field_name = field_name
+        super().__init__(msg)
+
+
+class ValidationFailureError(Exception):
+    """Concatenation of Validation errors"""
+    errors: [ValidationError]
+
+    def __init__(self, msg: str, errors: [ValidationError]):
+        self.errors = errors
+        super().__init__(msg)
+
+
 class SourceFileError(Exception):
     file_name: str
 

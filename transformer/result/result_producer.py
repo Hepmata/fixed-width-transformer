@@ -1,6 +1,6 @@
-from transformer.config import ResultConfig
+from transformer.result import ResultProducerConfig
 from transformer.library import logger, aws_service
-from transformer.library import send_messages
+from transformer.library.kafka_service import send_messages
 
 log = logger.set_logger(__name__)
 
@@ -8,14 +8,14 @@ log = logger.set_logger(__name__)
 class AbstractResult:
     arguments: dict
 
-    def __init__(self, config: ResultConfig):
-        self.arguments = config.get_arguments()
+    def __init__(self, config: ResultProducerConfig):
+        self.arguments = config.arguments
 
     def run(self, data: dict): pass
 
 
 class S3Result(AbstractResult):
-    def __init__(self, config: ResultConfig):
+    def __init__(self, config: ResultProducerConfig):
         super().__init__(config)
 
     def run(self, data: dict):
@@ -27,7 +27,7 @@ class S3Result(AbstractResult):
 
 
 class MSKScramResult(AbstractResult):
-    def __init__(self, config: ResultConfig):
+    def __init__(self, config: ResultProducerConfig):
         super().__init__(config)
 
     def run(self, data: list):
@@ -41,7 +41,7 @@ class MSKScramResult(AbstractResult):
 
 
 class ConsoleResult(AbstractResult):
-    def __init__(self, config: ResultConfig):
+    def __init__(self, config: ResultProducerConfig):
         super().__init__(config)
 
     def run(self, data):

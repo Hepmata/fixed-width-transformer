@@ -5,6 +5,7 @@
 
 Welcome to FixedWidth Transformer's documentation!
 ==================================================
+
 FixedWidth Transformer is a flexible ETL(Extract, Transform, Load) framework
 that aims to simplify the time required to process and push data.
 
@@ -14,9 +15,18 @@ loading to external sources.
 
 .. note::
    This project is still under development.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+   
+   Executor
+   SourceMapper
+   ResultMapper
+   Result
+.. include:: executor.rst
+.. include:: source_mapper.rst
+.. include:: result_mapper.rst
 
 
 
@@ -38,8 +48,11 @@ might need to do it yourself in Executor.
 * SourceMapping requires exactly 1 level of segment and cannot extend beyond that.
 This should be expected as well since fixed width files are segmented at most by lines. This framework does not support
 processing for data semgmentation like 'header.subheader' but only 'header'(single level).
-=======
-Overview
-========
+
+Structure
+=========
+The general structure of FixedWidth processor can be broken down into the following major sections.
+* Source Mapping - Processes, validates and enforces data mapping
+* 
 
 
