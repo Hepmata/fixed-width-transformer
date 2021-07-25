@@ -1,4 +1,6 @@
 import dataclasses
+from typing import Dict, List
+
 from transformer.library.exceptions import InvalidConfigError
 from transformer.validator.validator_config import ValidatorConfig, ValidatorFieldConfig
 
@@ -12,7 +14,7 @@ class ResultFieldFormat:
 @dataclasses.dataclass
 class ResultFormatterConfig:
     name: str
-    formats: dict[str, list[ResultFieldFormat]]
+    formats: Dict[str, List[ResultFieldFormat]]
 
 
 @dataclasses.dataclass

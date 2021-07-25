@@ -1,4 +1,6 @@
 import sys
+from typing import Dict
+
 import pandas as pd
 import transformer.result.result_formatter as fmt
 from transformer.validator import validator, ValidatorConfig
@@ -9,7 +11,7 @@ current_module = sys.modules[__name__]
 
 
 class ResultMapper:
-    def run(self, config: ResultMapperConfig, frames: dict[str, pd.DataFrame]):
+    def run(self, config: ResultMapperConfig, frames: Dict[str, pd.DataFrame]):
         # 1. Run ResultFormatter + Generator
         # 2. Validate
         # Final: Return Result
@@ -18,11 +20,11 @@ class ResultMapper:
         self._validate(config.validators, data)
         return data
 
-    def _format(self, config: ResultFormatterConfig, frames) -> dict[str, pd.DataFrame]:
+    def _format(self, config: ResultFormatterConfig, frames) -> Dict[str, pd.DataFrame]:
         data = getattr(fmt, config.name)().run(config, frames)
         return data
 
-    def _validate(self, config: [ValidatorConfig], frames: dict[str, pd.DataFrame]):
+    def _validate(self, config: [ValidatorConfig], frames: Dict[str, pd.DataFrame]):
         errors = []
         for segment_validator in config:
             for vld in segment_validator.validators:

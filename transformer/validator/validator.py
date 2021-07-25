@@ -1,6 +1,5 @@
-import dataclasses
-
 import pandas as pd
+from typing import Dict
 
 from transformer.library import logger
 from transformer.library.exceptions import ValidationError, MissingConfigError
@@ -15,7 +14,7 @@ class AbstractValidator:
                  segment: str,
                  field_name: str,
                  arguments: dict,
-                 frames: dict[pd.DataFrame]
+                 frames: Dict[str, pd.DataFrame]
                  ): pass
 
 
@@ -24,7 +23,7 @@ class NricValidator(AbstractValidator):
                  segment: str,
                  field_name: str,
                  arguments: dict,
-                 frames: dict[str, pd.DataFrame]
+                 frames: Dict[str, pd.DataFrame]
                  ):
         target_series = frames[segment][field_name]
 
@@ -45,7 +44,7 @@ class RegexValidator(AbstractValidator):
                  segment: str,
                  field_name: str,
                  arguments: dict,
-                 frames: dict[str, pd.DataFrame]
+                 frames: Dict[str, pd.DataFrame]
                  ):
         if 'pattern' not in arguments.keys():
             raise MissingConfigError("Required argument [pattern] is missing. Please verify configuration.")
@@ -74,7 +73,7 @@ class NaNValidator(AbstractValidator):
                  segment: str,
                  field_name: str,
                  arguments: dict,
-                 frames: dict[str, pd.DataFrame]
+                 frames: Dict[str, pd.DataFrame]
                  ):
         target_frame = frames[segment]
         if field_name.upper() == "ALL":
@@ -96,7 +95,7 @@ class RefValidator(AbstractValidator):
                  segment: str,
                  field_name: str,
                  arguments: dict,
-                 frames: dict[str, pd.DataFrame]
+                 frames: Dict[str, pd.DataFrame]
                  ):
         if arguments['type'] == "match":
             splits = arguments['ref'].split('.')

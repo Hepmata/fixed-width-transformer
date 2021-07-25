@@ -1,14 +1,16 @@
+from typing import Dict, List
+
 import pandas as pd
 import transformer.result.generator as generator
 from transformer.result.result_config import ResultFormatterConfig, ResultFieldFormat
 
 
 class AbstractResultFormatter:
-    def run(self, config:dict, frames: dict[str, pd.DataFrame]): pass
+    def run(self, config:dict, frames: Dict[str, pd.DataFrame]): pass
 
 
 class DefaultArrayResultFormatter(AbstractResultFormatter):
-    def run(self, config: ResultFormatterConfig, frames: dict[str, pd.DataFrame]) -> list:
+    def run(self, config: ResultFormatterConfig, frames: Dict[str, pd.DataFrame]) -> list:
         if not config.formats:
             return self._map_default(frames)
         else:
@@ -34,7 +36,7 @@ class DefaultArrayResultFormatter(AbstractResultFormatter):
             else:
                 return pd.concat(data, axis=1).to_dict('records')
 
-    def _map_default(self, frames: dict[str, pd.DataFrame]):
+    def _map_default(self, frames: Dict[str, pd.DataFrame]):
         data = []
         max_count = 0
         for f in frames:
@@ -56,7 +58,7 @@ class DefaultArrayResultFormatter(AbstractResultFormatter):
         else:
             return pd.concat(data, axis=1).to_dict('records')
 
-    def _map_segment(self, segment: list[ResultFieldFormat], frames):
+    def _map_segment(self, segment: List[ResultFieldFormat], frames):
         field_frames = []
         for field in segment:
             if "." in field.value:
