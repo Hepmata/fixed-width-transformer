@@ -7,7 +7,7 @@ class TestSourceMapperConfig:
             "pattern": "somepattern",
             "source": {
                 "header": {
-                    "mapper": "HeaderSourceFormatter",
+                    "formatter": "HeaderSourceFormatter",
                     "format": [
                         {
                             "name": "one",
@@ -28,7 +28,7 @@ class TestSourceMapperConfig:
             "pattern": "somepattern",
             "source": {
                 "header": {
-                    "mapper": "HeaderSourceFormatter",
+                    "formatter": "HeaderSourceFormatter",
                     "format": [
                         {
                             "name": "one",
@@ -69,7 +69,7 @@ class TestSourceMapperConfig:
             "pattern": "somepattern",
             "source": {
                 "header": {
-                    "mapper": "HeaderSourceFormatter",
+                    "formatter": "HeaderSourceFormatter",
                     "format": [
                         {
                             "name": "one",
@@ -84,7 +84,7 @@ class TestSourceMapperConfig:
                     ]
                 },
                 "body": {
-                    "mapper": "BodySourceFormatter",
+                    "formatter": "BodySourceFormatter",
                     "format": [
                         {
                             "name": "one",
@@ -109,7 +109,7 @@ class TestSourceMapperConfig:
             "pattern": "somepattern",
             "source": {
                 "header": {
-                    "mapper": "HeaderSourceFormatter",
+                    "formatter": "HeaderSourceFormatter",
                     "format": [
                         {
                             "name": "one",

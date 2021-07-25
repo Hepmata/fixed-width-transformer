@@ -8,8 +8,8 @@ class AbstractResultFormatter:
 
 
 class DefaultArrayResultFormatter(AbstractResultFormatter):
-    def run(self, config:ResultFormatterConfig, frames: dict[str, pd.DataFrame]) -> list:
-        if not config.segment_formats:
+    def run(self, config: ResultFormatterConfig, frames: dict[str, pd.DataFrame]) -> list:
+        if not config.formats:
             return self._map_default(frames)
         else:
             data = []
@@ -18,8 +18,8 @@ class DefaultArrayResultFormatter(AbstractResultFormatter):
                 current_length = len(frames[f].index)
                 if current_length > max_count:
                     max_count = current_length
-            for key in config.segment_formats:
-                d = self._map_segment(config.segment_formats[key], frames)
+            for key in config.formats:
+                d = self._map_segment(config.formats[key], frames)
                 if len(d.index) == 1:
                     # Multiple Content
                     data.append(pd.DataFrame({

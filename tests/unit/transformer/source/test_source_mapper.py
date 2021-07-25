@@ -35,7 +35,7 @@ class TestSourceMapper:
             "checkNan": True,
             "source": {
                 "header": {
-                    "mapper": "HeaderSourceFormatter",
+                    "formatter": "HeaderSourceFormatter",
                     "format": [
                         {
                             "name": "field1",
@@ -44,7 +44,7 @@ class TestSourceMapper:
                     ]
                 },
                 "body": {
-                    "mapper": "BodySourceFormatter",
+                    "formatter": "BodySourceFormatter",
                     "format": [
                         {
                             "name": "two",
@@ -54,7 +54,7 @@ class TestSourceMapper:
                                 {
                                     "name": "RegexValidator",
                                     "arguments": {
-                                        "pattern": "^.{10}"
+                                        "pattern": "^.{10}$"
                                     }
                                 }
                             ]
@@ -62,7 +62,7 @@ class TestSourceMapper:
                     ]
                 },
                 "footer": {
-                    "mapper": "FooterSourceFormatter",
+                    "formatter": "FooterSourceFormatter",
                     "format": [
                         {
                             "name": "footer1",

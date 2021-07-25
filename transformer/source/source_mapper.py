@@ -1,14 +1,10 @@
 from transformer.library import logger
-from transformer.library.exceptions import SourceFileError
-from transformer.decorators import PreValidate
 from transformer.source.source_config import SourceMapperConfig
 from transformer.source.source_config import SourceFormatterConfig
 from transformer.source import source_formatter
 from transformer.converter import ConverterConfig, converter
 from transformer.validator import ValidatorConfig, validator
 from transformer.library.exceptions import ValidationError, ValidationFailureError
-import dataclasses
-from io import StringIO
 import pandas as pd
 
 log = logger.set_logger(__name__)
@@ -24,6 +20,15 @@ class SourceMapper:
         4. Default Converter is then executed to trim away all whitespaces in DataFrames. To prevent this behaviour, provide and override in the config
         """
         dataframes = self._format(config.get_mappers(), config.file_name)
+        if config.nan_check:
+            errors = []
+            for df in dataframes:
+                try:
+                    validator.NaNValidator().validate(segment=df, field_name="ALL", arguments={}, frames=dataframes)
+                except ValidationError as e:
+                    errors.append(e)
+            if len(errors) > 0:
+                raise ValidationFailureError(f"Nan Validation failed for {len(errors)} segments.", errors)
         self._validate(config.get_validators(), dataframes)
         if config.trim:
             dataframes = self._trim(dataframes)
@@ -53,6 +58,7 @@ class SourceMapper:
                         frames=dataframes
                     )
                 except ValidationError as e:
+                    print(e)
                     errors.append(e)
 
         if len(errors) > 0:

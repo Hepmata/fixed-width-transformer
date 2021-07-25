@@ -31,9 +31,11 @@ class TestLambdaFixedWidthExecutor:
         files:
             File 1:
                 pattern: ^{file_name}$
+                trim: True
+                nan_check: True
                 source:
                     header:
-                        mapper: HeaderSourceFormatter
+                        formatter: HeaderSourceFormatter
                         format:
                             - name: header1
                               spec: 0,1
@@ -42,23 +44,21 @@ class TestLambdaFixedWidthExecutor:
                             - name: header3
                               spec: 5,20
                     body:
-                        mapper: BodySourceFormatter
+                        formatter: BodySourceFormatter
                         format:
                             - name: body1
                               spec: 0,1
                             - name: body2
                               spec: 1,5
                     footer:
-                        mapper: FooterSourceFormatter
+                        formatter: FooterSourceFormatter
                         format:
                             - name: footer1
                               spec: 0, 5
-                output:
-                    result:
+                result:
+                    producer:
                         name: ConsoleResult
-                        arguments:
-                            arg1: test
-                    mapper: DefaultArrayResultFormatter
+                    formatter: DefaultArrayResultFormatter
                     format:
                         metadata:
                             - name: field1

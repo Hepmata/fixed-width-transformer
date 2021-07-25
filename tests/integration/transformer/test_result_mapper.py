@@ -22,8 +22,8 @@ class TestResultMapper:
                 pattern: ^{file_name}$
                 source:
 
-                output:
-                    mapper: DefaultArrayResultFormatter
+                result:
+                    formatter: DefaultArrayResultFormatter
                     format:
                         metadata:
                             - name: referenceId
@@ -39,7 +39,7 @@ class TestResultMapper:
 
         cfg = executor_config.ExecutorConfig(key=file_name, inline=text)
         result_cfg = result_mapper.ResultMapperConfig(config=cfg.get_exact_config())
-        mapper = result_mapper.ResultMapper(result_cfg)
+        mapper = result_mapper.ResultMapper()
         dataframes = {
             "header": pd.DataFrame({
                 "referenceId": ["AREYOUSUREYOUNEEDTHIS"]
@@ -53,6 +53,6 @@ class TestResultMapper:
                 }
             )
         }
-        results = mapper.run(dataframes)
+        results = mapper.run(result_cfg, dataframes)
         assert isinstance(results, list)
         assert len(results) == 10

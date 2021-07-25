@@ -47,9 +47,10 @@ class SourceMapperConfig:
                 raise exceptions.InvalidConfigError(f"{file_format} segment cannot be empty")
         else:
             raise exceptions.InvalidConfigError(f"{file_format} segment is missing in configuration")
-
-        has_header = True if 'header' in config[file_format].keys() else False
-        has_footer = True if 'footer' in config[file_format].keys() else False
+        if 'trim' in config.keys():
+            self.trim = config['trim']
+        if 'nan_check' in config.keys():
+            self.nan_check = config['nan_check']
         for segment in config[file_format]:
             names = []
             specs = []
@@ -75,13 +76,8 @@ class SourceMapperConfig:
                         field_name=field['name'],
                         name=field['converter']
                     ))
-
-                if 'trim' in field.keys():
-                    self.trim = field['trim']
-                if 'nanCheck' in field.keys():
-                    self.nan_check = field['nanCheck']
             mappers.append(SourceFormatterConfig(
-                name=config[file_format][segment]['mapper'],
+                name=config[file_format][segment]['formatter'],
                 segment=segment,
                 names=names,
                 specs=specs,

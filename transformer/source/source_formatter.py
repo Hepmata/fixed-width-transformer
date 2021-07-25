@@ -1,8 +1,6 @@
 from transformer.library import logger
 from transformer.library.exceptions import SourceFileError
-from transformer.decorators import PreValidate
 from transformer.source import SourceFormatterConfig
-import dataclasses
 from io import StringIO
 import pandas as pd
 
@@ -60,7 +58,7 @@ class BodyOnlySourceFormatter(AbstractDataMapper):
         try:
             data = pd.read_fwf(file_name, colspecs=config.specs, header=None,
                                names=config.names,
-                               converters={h: str for h in config.names}, footer=0,
+                               converters={h: str for h in config.names}, skipfooter=0,
                                delimiter="\n\t")
             if len(data.index) == 0:
                 raise SourceFileError("Invalid Source File, Index is empty", file_name)

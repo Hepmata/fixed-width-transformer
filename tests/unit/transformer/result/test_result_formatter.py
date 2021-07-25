@@ -1,5 +1,5 @@
 import pandas as pd
-from transformer.result import result_formatter
+from transformer.result import ResultFormatterConfig, ResultFieldFormat, DefaultArrayResultFormatter
 
 
 class TestResultFormatter:
@@ -16,7 +16,7 @@ class TestResultFormatter:
     # 
     #     cfg = result_formatter.ResultFormatterConfig(
     #         {
-    #             "mapper": "DefaultArrayResultFormatter",
+    #             "formatter": "DefaultArrayResultFormatter",
     #             "format": {
     #                 "body": [
     #                     {
@@ -46,25 +46,16 @@ class TestResultFormatter:
                 "field2": [6, 7, 8, 9, 10]
             })
         }
-
-        cfg = result_formatter.ResultFormatterConfig(
-            {
-                "mapper": "DefaultArrayResultFormatter",
-                "format": {
+        cfg = ResultFormatterConfig(
+            name="DefaultArrayResultFormatter",
+            formats={
                     "body": [
-                        {
-                            "name": "one",
-                            "value": "input.body.field1"
-                        },
-                        {
-                            "name": "id",
-                            "value": "UuidGenerator"
-                        }
+                        ResultFieldFormat("one", "body.field1"),
+                        ResultFieldFormat("id", "UuidGenerator"),
                     ]
                 }
-            }
         )
-        results = result_formatter.DefaultArrayResultFormatter().run(cfg, dataframes)
+        results = DefaultArrayResultFormatter().run(cfg, dataframes)
         print(results)
         assert isinstance(results, list)
         assert len(results) == 5
@@ -82,35 +73,20 @@ class TestResultFormatter:
                 "field2": [6, 7, 8, 9, 10]
             })
         }
-
-        cfg = result_formatter.ResultFormatterConfig(
-            {
-                "mapper": "DefaultArrayResultFormatter",
-                "format": {
-                    "metadata": [
-                        {
-                            "name": "field1Register",
-                            "value": "input.header.field1"
-                        },
-                        {
-                            "name": "batchId",
-                            "value": "UuidGenerator"
-                        }
-                    ],
-                    "body": [
-                        {
-                            "name": "one",
-                            "value": "input.body.field1"
-                        },
-                        {
-                            "name": "id",
-                            "value": "UuidGenerator"
-                        }
-                    ]
-                }
+        cfg = ResultFormatterConfig(
+            name="DefaultArrayResultFormatter",
+            formats={
+                "metadata": [
+                    ResultFieldFormat("field1Register", "header.field1"),
+                    ResultFieldFormat("batchId", "UuidGenerator"),
+                ],
+                "body": [
+                    ResultFieldFormat("one", "body.field1"),
+                    ResultFieldFormat("id", "UuidGenerator"),
+                ]
             }
         )
-        results = result_formatter.DefaultArrayResultFormatter().run(cfg, dataframes)
+        results = DefaultArrayResultFormatter().run(cfg, dataframes)
         print(results)
         assert isinstance(results, list)
         assert len(results) == 5
@@ -133,10 +109,9 @@ class TestResultFormatter:
             })
         }
 
-        cfg = result_formatter.ResultFormatterConfig(
-            {
-                "mapper": "DefaultArrayResultFormatter",
-            }
+        cfg = ResultFormatterConfig(
+            name="DefaultArrayResultFormatter",
+            formats={}
         )
-        results = result_formatter.DefaultArrayResultFormatter().run(cfg, dataframes)
+        results = DefaultArrayResultFormatter().run(cfg, dataframes)
         print(results)

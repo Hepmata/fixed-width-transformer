@@ -3,5 +3,4 @@ import pandas as pd
 
 
 class TestResultMapper:
-    class TestSuccess:
-        pass
+    pass

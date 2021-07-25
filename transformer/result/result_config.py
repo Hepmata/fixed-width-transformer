@@ -11,21 +11,31 @@ class ResultFieldFormat:
 
 @dataclasses.dataclass
 class ResultFormatterConfig:
-    mapper: str
-    segment_formats: dict[str, list[ResultFieldFormat]]
-    segment_validators: [ValidatorConfig]
+    name: str
+    formats: dict[str, list[ResultFieldFormat]]
+
+
+@dataclasses.dataclass
+class ResultMapperConfig:
+    format: ResultFormatterConfig
+    validators: [ValidatorConfig]
 
     def __init__(self, config: dict):
+        self.validators = []
+        self.configure(config)
+
+    def configure(self, config: dict):
+        print(config)
+        rst = "result"
         fmt = "format"
-        self.mapper = config['mapper']
-        self.segment_formats = {}
-        self.segment_validators = []
-        if fmt not in config.keys():
+        formats = {}
+        if fmt not in config[rst].keys():
             return
-        for segment in config[fmt]:
-            segment_format = []
-            for field in config[fmt][segment]:
-                segment_format.append(
+
+        for segment in config[rst][fmt]:
+            format = []
+            for field in config[rst][fmt][segment]:
+                format.append(
                     ResultFieldFormat(
                         name=field['name'],
                         value=field['value']
@@ -34,55 +44,24 @@ class ResultFormatterConfig:
                 if 'validators' in field.keys():
                     validators = []
                     for validator in field['validators']:
+                        args = validator['arguments'] if 'arguments' in validator.keys() else {}
                         validators.append(
                             ValidatorFieldConfig(
                                 name=validator['name'],
-                                arguments=validator['arguments']
+                                arguments=args
                             )
                         )
-                    self.segment_validators.append(
-                        ValidatorConfig(
-                            segment=segment,
-                            field_name=field['name'],
-                            validations=validators
-                        )
-                    )
-            self.segment_formats[segment] = segment_format
+                    self.validators = validators
+            formats[segment] = format
+        self.format = ResultFormatterConfig(name=config[rst]['formatter'], formats=formats)
 
 
 @dataclasses.dataclass
-class ResultMapperConfig:
-    _result_config: dict
-    segment_format: ResultFormatterConfig
-
-    def __init__(self, config: dict):
-        self.set_result_config(config)
-        self.segment_format = ResultFormatterConfig(self._result_config)
-
-    def set_result_config(self, config):
-        try:
-            if 'output' in config:
-                self._result_config = config['output']
-            else:
-                self._result_config = {}
-        except KeyError as e:
-            raise InvalidConfigError(e)
-
-    def get_result_config(self):
-        return self._result_config
-
-
-@dataclasses.dataclass()
-class ResultConfig:
-    name: dict
+class ResultProducerConfig:
+    name: str
     arguments: dict
 
     def __init__(self, config: dict):
-        self.name = config['output']['result']['name']
-        self.arguments = config['output']['result']['arguments']
-
-    def get_arguments(self):
-        return self.arguments
-
-    def get_name(self):
-        return self.name
+        self.name = config['result']['producer']['name']
+        args = config['result']['producer']['arguments'] if 'arguments' in config['result']['producer'] else {}
+        self.arguments = args

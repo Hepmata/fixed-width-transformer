@@ -3,7 +3,7 @@ from transformer.library import logger, aws_service
 from transformer.executor import ExecutorConfig
 from transformer.source import SourceMapperConfig, SourceMapper
 from transformer.source import source_mapper
-from transformer.result import ResultMapperConfig, ResultConfig
+from transformer.result import ResultMapperConfig, ResultProducerConfig
 from transformer.result import ResultMapper, result_producer
 from transformer.model import ResultResponse
 
@@ -36,12 +36,12 @@ class LambdaFixedWidthExecutor(AbstractExecutor):
         # 4. Run ResultMapper
         # Conditional Segment
         result_mapper_config = ResultMapperConfig(cls.get_exact_config())
-        result_mapper = ResultMapper(result_mapper_config)
-        result_data = result_mapper.run(dataframes)
+        result_mapper = ResultMapper()
+        result_data = result_mapper.run(config=result_mapper_config,frames=dataframes)
         # 5. Run ResultProducer
         # # Conditional Segment
-        result_config = ResultConfig(cls.get_exact_config())
-        response = getattr(result_producer, result_config.get_name())(result_config).run(result_data)
+        result_config = ResultProducerConfig(cls.get_exact_config())
+        response = getattr(result_producer, result_config.name)(result_config).run(result_data)
 
         # 6. Return Result
         return ResultResponse(destination={})
