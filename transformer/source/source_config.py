@@ -18,7 +18,6 @@ class SourceFormatterConfig:
     segment: str
     names: list
     specs: list
-    validations: list
 
 
 @dataclass
@@ -80,8 +79,7 @@ class SourceMapperConfig:
                 name=config[file_format][segment]['formatter'],
                 segment=segment,
                 names=names,
-                specs=specs,
-                validations=validators
+                specs=specs
                 )
             )
         self.mappers = mappers

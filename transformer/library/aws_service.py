@@ -68,3 +68,22 @@ def retrieve_secret(secret_name: str):
     except be.ClientError as e:
         print(e)
     raise Exception(f'Failed to retrieve secret [{secret_name}] from SecretsManager')
+
+
+def retrieve_cluster_arn(cluster_name: str, client=None):
+    if client is None:
+        client = boto3.client('kafka')
+    response = client.list_clusters(
+        ClusterNameFilter=cluster_name,
+        MaxResults=3
+    )
+    if len(response['ClusterInfoList']) == 0:
+        raise Exception('No MSK Broker found. Please check cluster name in request')
+    return response['ClusterInfoList'][0]['ClusterArn']
+
+
+def retrieve_bootstrap_servers(cluster_name, client=None):
+    if client is None:
+        client = boto3.client('kafka')
+    cluster_arn = retrieve_cluster_arn(cluster_name, client)
+    return client.get_bootstrap_brokers(ClusterArn=cluster_arn)['BootstrapBrokerStringSaslScram']
