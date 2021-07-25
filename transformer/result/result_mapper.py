@@ -11,19 +11,16 @@ current_module = sys.modules[__name__]
 class ResultMapper:
     def run(self, config: ResultMapperConfig, frames: dict[str, pd.DataFrame]):
         # 1. Run ResultFormatter + Generator
-        data = self._format(config.format, frames)
-        self._validate(config.validators, data)
-        # self._validate(self.config.segment_format, data)
+        # 2. Validate
         # Final: Return Result
 
+        data = self._format(config.format, frames)
+        self._validate(config.validators, data)
         return data
 
     def _format(self, config: ResultFormatterConfig, frames) -> dict[str, pd.DataFrame]:
         data = getattr(fmt, config.name)().run(config, frames)
         return data
-
-    def _convert(self):
-        pass
 
     def _validate(self, config: [ValidatorConfig], frames: dict[str, pd.DataFrame]):
         errors = []
