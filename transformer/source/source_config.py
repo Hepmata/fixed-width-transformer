@@ -18,8 +18,6 @@ class SourceFormatterConfig:
     segment: str
     names: list
     specs: list
-    skipHeader: bool
-    skipFooter: bool
     validations: list
 
 
@@ -28,6 +26,8 @@ class SourceMapperConfig:
     mappers: [SourceFormatterConfig]
     validators: [ValidatorConfig]
     converters: [ConverterConfig]
+    trim: bool
+    nan_check: bool
     file_name: str
 
     def __init__(self, config: dict, file_name: str):
@@ -36,6 +36,8 @@ class SourceMapperConfig:
         self.validators = []
         self.converters = []
         self.file_name = file_name
+        self.trim = True
+        self.nan_check = True
         self.configure(config)
 
     def configure(self, config: dict, file_format="source"):
@@ -73,13 +75,16 @@ class SourceMapperConfig:
                         field_name=field['name'],
                         name=field['converter']
                     ))
+
+                if 'trim' in field.keys():
+                    self.trim = field['trim']
+                if 'nanCheck' in field.keys():
+                    self.nan_check = field['nanCheck']
             mappers.append(SourceFormatterConfig(
                 name=config[file_format][segment]['mapper'],
                 segment=segment,
                 names=names,
                 specs=specs,
-                skipHeader=has_header,
-                skipFooter=has_footer,
                 validations=validators
                 )
             )

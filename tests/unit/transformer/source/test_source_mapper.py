@@ -1,5 +1,5 @@
 from transformer.source import SourceMapperConfig, SourceMapper, SourceFormatterConfig
-from tests.test_helper import generate_fw_text_line
+from tests.test_helper import generate_fw_text_line, generate_file_data
 import pytest
 import os
 import uuid
@@ -18,19 +18,21 @@ class TestSourceMapper:
 
     def test_1_segment_with_validation(self):
         pass
-    
+
     def test_2_segment_without_validation(self):
         pass
-    
+
     def test_2_segment_with_validation(self):
         pass
-    
+
     def test_3_segment_without_validation(self):
         pass
-    
+
     def test_3_segment_with_validator_and_converter(self, file_name):
         config_dict = {
             "pattern": "somepattern",
+            "trim": True,
+            "checkNan": True,
             "source": {
                 "header": {
                     "mapper": "HeaderSourceFormatter",
@@ -52,7 +54,7 @@ class TestSourceMapper:
                                 {
                                     "name": "RegexValidator",
                                     "arguments": {
-                                        "pattern": "^test$"
+                                        "pattern": "^.{10}"
                                     }
                                 }
                             ]
@@ -92,24 +94,6 @@ class TestSourceMapper:
         dataframes = SourceMapper().run(config)
         print(dataframes)
         assert len(dataframes.keys()) == 3
-
-
-def generate_file_data(file_name, mapping: dict):
-    with open(file_name, 'w') as file:
-        for m in mapping:
-            target = mapping[m]
-            for v in target['values']:
-                file.write(generate_fw_text_line(v, target['spacing']))
-                file.write("\n")
-
-"""
-header: {
-    "values": [[1, 2, 3, 4, 5]]
-    "spacing": [5, 5, 5, 5, 5]
-},
-body: {
-    "values": [[1, 2, 3, 4, 5],[1, 2, 3, 4, 5]]
-    "spacing: [5, 5, 5, 5, 5]
-}
-
-"""
+        for df in dataframes:
+            assert len(dataframes[df].index) == len(file_data[df]['values'])
+        assert isinstance(dataframes['body']['two'][0].item(), int)

@@ -30,11 +30,12 @@ class NricValidator(AbstractValidator):
 
         matched = target_series[target_series.str.count(r'(?i)^[STFG]\d{7}[A-Z]$') == True]
         if len(matched.index) != len(target_series.index):
+            failure_count = target_series.size - matched.size
             raise ValidationError(
-                "Validation Failed",
+                f"NRIC Validation Failure for {segment}, {field_name} with {failure_count}/{target_series.size} count",
                 segment,
                 field_name,
-                matched.size,
+                failure_count,
                 target_series.size
             )
 
@@ -57,11 +58,12 @@ class RegexValidator(AbstractValidator):
         matched = target_series[target_series.str.count(arguments['pattern']) == True]
 
         if len(matched.index) != len(target_series.index):
+            failure_count = target_series.size - matched.size
             raise ValidationError(
-                "Validation Failed",
+                f"Regex Validation Failure for {segment}, {field_name} with {failure_count}/{target_series.size} count",
                 segment,
                 field_name,
-                matched.size,
+                failure_count,
                 target_series.size
             )
 

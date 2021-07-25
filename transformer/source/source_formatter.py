@@ -27,12 +27,10 @@ class HeaderSourceFormatter(AbstractDataMapper):
 
 class BodySourceFormatter(AbstractDataMapper):
     def run(self, config: SourceFormatterConfig, file_name: str) -> pd.DataFrame:
-        header = 0 if config.skipHeader else None
-        footer = 1 if config.skipFooter else 0
         try:
-            data = pd.read_fwf(file_name, colspecs=config.specs, header=header,
+            data = pd.read_fwf(file_name, colspecs=config.specs, header=0,
                                names=config.names,
-                               converters={h: str for h in config.names}, skipfooter=footer,
+                               converters={h: str for h in config.names}, skipfooter=1,
                                delimiter="\n\t")
             if len(data.index) == 0:
                 raise SourceFileError("Invalid Source File, Index is empty", file_name)
@@ -53,5 +51,19 @@ class FooterSourceFormatter(AbstractDataMapper):
                                    names=config.names,
                                    converters={h: str for h in config.names}, delimiter="\n\t")
                 return data
+        except FileNotFoundError as e:
+            raise SourceFileError(e, file_name)
+
+
+class BodyOnlySourceFormatter(AbstractDataMapper):
+    def run(self, config: SourceFormatterConfig, file_name: str) -> pd.DataFrame:
+        try:
+            data = pd.read_fwf(file_name, colspecs=config.specs, header=None,
+                               names=config.names,
+                               converters={h: str for h in config.names}, footer=0,
+                               delimiter="\n\t")
+            if len(data.index) == 0:
+                raise SourceFileError("Invalid Source File, Index is empty", file_name)
+            return data
         except FileNotFoundError as e:
             raise SourceFileError(e, file_name)

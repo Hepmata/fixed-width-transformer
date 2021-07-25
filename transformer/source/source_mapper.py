@@ -5,7 +5,8 @@ from transformer.source.source_config import SourceMapperConfig
 from transformer.source.source_config import SourceFormatterConfig
 from transformer.source import source_formatter
 from transformer.converter import ConverterConfig, converter
-from transformer.validator import ValidatorConfig
+from transformer.validator import ValidatorConfig, validator
+from transformer.library.exceptions import ValidationError, ValidationFailureError
 import dataclasses
 from io import StringIO
 import pandas as pd
@@ -23,6 +24,9 @@ class SourceMapper:
         4. Default Converter is then executed to trim away all whitespaces in DataFrames. To prevent this behaviour, provide and override in the config
         """
         dataframes = self._format(config.get_mappers(), config.file_name)
+        self._validate(config.get_validators(), dataframes)
+        if config.trim:
+            dataframes = self._trim(dataframes)
         dataframes = self._convert(config.get_converters(), dataframes)
         return dataframes
 
@@ -37,5 +41,25 @@ class SourceMapper:
             dataframes[cfg.segment][cfg.field_name] = getattr(converter, cfg.name)().run(cfg, dataframes[cfg.segment][cfg.field_name])
         return dataframes
 
-    def _validate(self, config: [ValidatorConfig]) -> None:
-        pass
+    def _validate(self, config: [ValidatorConfig], dataframes: [str, pd.DataFrame]) -> None:
+        errors = []
+        for cfg in config:
+            for vld in cfg.validators:
+                try:
+                    getattr(validator, vld.name)().validate(
+                        segment=cfg.segment,
+                        field_name = cfg.field_name,
+                        arguments=vld.arguments,
+                        frames=dataframes
+                    )
+                except ValidationError as e:
+                    errors.append(e)
+
+        if len(errors) > 0:
+            raise ValidationFailureError(f"There are {len(errors)} pre-validation errors. {errors}", errors)
+
+    def _trim(self, dataframes: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
+        for df in dataframes:
+            dataframes[df] = dataframes[df].applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+        return dataframes
