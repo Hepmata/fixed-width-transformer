@@ -1,7 +1,7 @@
 
 from transformer.library import logger, aws_service
 from transformer.executor import ExecutorConfig
-from transformer.source import SourceMapperConfig
+from transformer.source import SourceMapperConfig, SourceMapper
 from transformer.source import source_mapper
 from transformer.result import ResultMapperConfig, ResultConfig
 from transformer.result import ResultMapper, result_producer
@@ -23,17 +23,16 @@ class LambdaFixedWidthExecutor(AbstractExecutor):
         cls = ExecutorConfig(key)
         # 2. Download Source Data/File
         # Compulsory segment
+        file_name = "/tmp/" + key.replace("/", "_")
         file = aws_service.download_s3_file(
             bucket=bucket,
             key=key,
-            file_name="/tmp/tmp_file.txt"
+            file_name=file_name
         )
         # 3. Run SourceMapper
         # Compulsory Segment
-        src_mapper = SourceMapperConfig(config=cls.get_exact_config())
-        dataframes = {}
-        for mapping in src_mapper.get_mappers():
-            dataframes[mapping.segment] = getattr(source_mapper, mapping.name)().run(mapping, file)
+        src_mapper_cfg = SourceMapperConfig(config=cls.get_exact_config(), file_name=file_name)
+        dataframes = SourceMapper().run(src_mapper_cfg)
         # 4. Run ResultMapper
         # Conditional Segment
         result_mapper_config = ResultMapperConfig(cls.get_exact_config())
