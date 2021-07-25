@@ -63,3 +63,16 @@ class ConsoleResultProducer(AbstractResult):
         else:
             print(data)
         log.info("--- Print Completed ---")
+
+
+class SummaryResultProducer(AbstractResult):
+    def __init__(self, config: ResultProducerConfig):
+        super().__init__(config)
+
+    def run(self, data):
+        log.info("--- Summary Log ---")
+        log.info(f"Number of Records: {len(data)}")
+        record = data[0]
+        log.info(f"Each Record has the following keys: {record.keys()}")
+        log.info(f"Sample Record: {record}")
+        log.info("--- End Summary Log ---")
