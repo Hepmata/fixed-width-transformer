@@ -9,75 +9,77 @@ class TestStrConverter:
     class TestSuccess:
         def test_int_to_str(self):
             config = ConverterConfig(
-                segment="body",
-                field_name="test1",
-                name="StrConverter"
+                segment='body', field_name='test1', name='StrConverter'
             )
             dataframes = {
-                "header": None,
-                "body": pd.DataFrame({
-                    "test1": [1, 2, 3, 4, 5]
-                })
+                'header': None,
+                'body': pd.DataFrame({'test1': [1, 2, 3, 4, 5]}),
             }
-            results = converter.StrConverter().run(config,dataframes[config.segment][config.field_name])
+            results = converter.StrConverter().run(
+                config, dataframes[config.segment][config.field_name]
+            )
             print(results)
-            assert len(results.index) == len(dataframes[config.segment][config.field_name].index)
+            assert len(results.index) == len(
+                dataframes[config.segment][config.field_name].index
+            )
             for f in results:
                 assert isinstance(f, str)
 
         def test_float_to_int(self):
             config = ConverterConfig(
-                segment="body",
-                field_name="test1",
-                name="StrConverter"
+                segment='body', field_name='test1', name='StrConverter'
             )
             dataframes = {
-                "header": None,
-                "body": pd.DataFrame({
-                    "test1": [1.0, 2.0, 3.0, 4.0, 5.0]
-                })
+                'header': None,
+                'body': pd.DataFrame({'test1': [1.0, 2.0, 3.0, 4.0, 5.0]}),
             }
-            results = converter.StrConverter().run(config,dataframes[config.segment][config.field_name])
+            results = converter.StrConverter().run(
+                config, dataframes[config.segment][config.field_name]
+            )
             print(results)
-            assert len(results.index) == len(dataframes[config.segment][config.field_name].index)
+            assert len(results.index) == len(
+                dataframes[config.segment][config.field_name].index
+            )
             for f in results:
                 assert isinstance(f, str)
 
         def test_str_to_str(self):
             config = ConverterConfig(
-                segment="body",
-                field_name="test1",
-                name="StrConverter"
+                segment='body', field_name='test1', name='StrConverter'
             )
             dataframes = {
-                "header": None,
-                "body": pd.DataFrame({
-                    "test1": ["lalala", "lololol", "lelelele"]
-                })
+                'header': None,
+                'body': pd.DataFrame({'test1': ['lalala', 'lololol', 'lelelele']}),
             }
-            results = converter.StrConverter().run(config,dataframes[config.segment][config.field_name])
+            results = converter.StrConverter().run(
+                config, dataframes[config.segment][config.field_name]
+            )
             print(results)
 
-            assert len(results.index) == len(dataframes[config.segment][config.field_name].index)
+            assert len(results.index) == len(
+                dataframes[config.segment][config.field_name].index
+            )
             for f in results:
                 assert isinstance(f, str)
 
         def test_escaped_str_to_str(self):
             config = ConverterConfig(
-                segment="body",
-                field_name="test1",
-                name="StrConverter"
+                segment='body', field_name='test1', name='StrConverter'
             )
             dataframes = {
-                "header": None,
-                "body": pd.DataFrame({
-                    "test1": ["\"asda\"\"asdasd", "\"asd\"\"asdlololol", "lelelele"]
-                })
+                'header': None,
+                'body': pd.DataFrame(
+                    {'test1': ['"asda""asdasd', '"asd""asdlololol', 'lelelele']}
+                ),
             }
-            results = converter.StrConverter().run(config,dataframes[config.segment][config.field_name])
+            results = converter.StrConverter().run(
+                config, dataframes[config.segment][config.field_name]
+            )
             print(results)
 
-            assert len(results.index) == len(dataframes[config.segment][config.field_name].index)
+            assert len(results.index) == len(
+                dataframes[config.segment][config.field_name].index
+            )
             for f in results:
                 assert isinstance(f, str)
 
@@ -86,62 +88,56 @@ class TestNumberConverter:
     class TestSuccess:
         def test_str_to_int(self):
             config = ConverterConfig(
-                segment="body",
-                field_name="field1",
-                name="IntConverter"
+                segment='body', field_name='field1', name='IntConverter'
             )
-            dataframes = {
-                "body": pd.DataFrame({
-                    "field1": ["1", "2", "3", "4", "5"]
-                })
-            }
-            results = converter.NumberConverter().run(config, dataframes[config.segment][config.field_name])
+            dataframes = {'body': pd.DataFrame({'field1': ['1', '2', '3', '4', '5']})}
+            results = converter.NumberConverter().run(
+                config, dataframes[config.segment][config.field_name]
+            )
             print(results)
-            assert len(results.index) == len(dataframes[config.segment][config.field_name].index)
+            assert len(results.index) == len(
+                dataframes[config.segment][config.field_name].index
+            )
             for f in results:
                 assert isinstance(f, int)
 
         def test_str_to_float(self):
             config = ConverterConfig(
-                segment="body",
-                field_name="field1",
-                name="IntConverter"
+                segment='body', field_name='field1', name='IntConverter'
             )
             dataframes = {
-                "body": pd.DataFrame({
-                    "field1": ["1.0", "2.0", "3.0", "4.0", "5.0"]
-                })
+                'body': pd.DataFrame({'field1': ['1.0', '2.0', '3.0', '4.0', '5.0']})
             }
-            results = converter.NumberConverter().run(config,dataframes[config.segment][config.field_name])
+            results = converter.NumberConverter().run(
+                config, dataframes[config.segment][config.field_name]
+            )
             print(results)
-            assert len(results.index) == len(dataframes[config.segment][config.field_name].index)
+            assert len(results.index) == len(
+                dataframes[config.segment][config.field_name].index
+            )
             for f in results:
                 assert isinstance(f, float)
 
         def test_invalid_to_int(self):
             config = ConverterConfig(
-                segment="body",
-                field_name="field1",
-                name="IntConverter"
+                segment='body', field_name='field1', name='IntConverter'
             )
             dataframes = {
-                "body": pd.DataFrame({
-                    "field1": ["adasd", "*$)_@#(_)@#", "1"]
-                })
+                'body': pd.DataFrame({'field1': ['adasd', '*$)_@#(_)@#', '1']})
             }
             with pytest.raises(ConversionError):
-                converter.NumberConverter().run(config,dataframes[config.segment][config.field_name])
+                converter.NumberConverter().run(
+                    config, dataframes[config.segment][config.field_name]
+                )
 
         def test_invalid_to_float(self):
             config = ConverterConfig(
-                segment="body",
-                field_name="field1",
-                name="IntConverter"
+                segment='body', field_name='field1', name='IntConverter'
             )
             dataframes = {
-                "body": pd.DataFrame({
-                    "field1": ["adasd", "*$)_@#(_)@#", "1"]
-                })
+                'body': pd.DataFrame({'field1': ['adasd', '*$)_@#(_)@#', '1']})
             }
             with pytest.raises(ConversionError):
-                converter.NumberConverter().run(config,dataframes[config.segment][config.field_name])
+                converter.NumberConverter().run(
+                    config, dataframes[config.segment][config.field_name]
+                )

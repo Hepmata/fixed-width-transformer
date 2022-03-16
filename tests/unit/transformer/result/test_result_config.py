@@ -6,22 +6,12 @@ from transformer.result import ResultMapperConfig
 class TestResultMapperConfig:
     @pytest.fixture
     def pre_config(self):
-        return {
-            "result": {
-                "formatter": "DefaultJsonArrayFormatter",
-                "format": {}
-            }
-        }
+        return {'result': {'formatter': 'DefaultJsonArrayFormatter', 'format': {}}}
 
     def test_result_mapper_no_validation(self, pre_config):
         pre_config['result']['format'] = {
-                    "header": [
-                        {
-                            "name": "field1",
-                            "value": "header.field1"
-                        }
-                    ]
-                }
+            'header': [{'name': 'field1', 'value': 'header.field1'}]
+        }
         config = ResultMapperConfig(pre_config)
         assert config.format
         assert len(config.format.formats) == 1
@@ -29,24 +19,17 @@ class TestResultMapperConfig:
 
     def test_result_mapper_with_validation(self, pre_config):
         pre_config['result']['format'] = {
-                    "header": [
-                        {
-                            "name": "field1",
-                            "value": "header.field1",
-                            "validators": [
-                                {
-                                    "name": "RegexValidator",
-                                    "arguments": {
-                                        "pattern": "^test$"
-                                    }
-                                },
-                                {
-                                    "name": "NricValidator"
-                                }
-                            ]
-                        }
-                    ]
+            'header': [
+                {
+                    'name': 'field1',
+                    'value': 'header.field1',
+                    'validators': [
+                        {'name': 'RegexValidator', 'arguments': {'pattern': '^test$'}},
+                        {'name': 'NricValidator'},
+                    ],
                 }
+            ]
+        }
         config = ResultMapperConfig(pre_config)
         assert config.format
         assert len(config.format.formats) == 1

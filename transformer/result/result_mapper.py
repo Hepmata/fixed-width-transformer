@@ -1,4 +1,6 @@
 import sys
+from typing import Dict
+
 import pandas as pd
 import transformer.result.result_formatter as fmt
 from transformer.validator import validator, ValidatorConfig
@@ -9,27 +11,25 @@ current_module = sys.modules[__name__]
 
 
 class ResultMapper:
-    def run(self, config: ResultMapperConfig, frames: dict[str, pd.DataFrame]):
+    def run(self, config: ResultMapperConfig, frames: Dict[str, pd.DataFrame]):
         # 1. Run ResultFormatter + Generator
         # 2. Validate
         # Final: Return Result
+        formatter = getattr(fmt, config.format.name)()
+        prepared_data = formatter.prepare(config.format, frames)
+        self._validate(config.validators, prepared_data)
+        return formatter.transform(prepared_data)
 
-        data = self._format(config.format, frames)
-        self._validate(config.validators, data)
-        return data
-
-    def _format(self, config: ResultFormatterConfig, frames) -> dict[str, pd.DataFrame]:
-        data = getattr(fmt, config.name)().run(config, frames)
-        return data
-
-    def _validate(self, config: [ValidatorConfig], frames: dict[str, pd.DataFrame]):
+    def _validate(self, config: [ValidatorConfig], frames: Dict[str, pd.DataFrame]):
         errors = []
-        for segment_validator in config:
-            for vld in segment_validator.validators:
+        for cfg in config:
+            for vld in cfg.validators:
                 try:
-                    getattr(validator, vld.name)().validate(segment_validator.segment, segment_validator.field_name, vld.arguments, frames)
+                    getattr(validator, vld.name)().validate(
+                        cfg.segment, cfg.field_name, vld.arguments, frames
+                    )
                 except ValidationError as v:
                     errors.append(v)
 
         if len(errors) > 0:
-            raise ValidationFailureError("Failed validations for ResultMapper", errors)
+            raise ValidationFailureError('Failed validations for ResultMapper', errors)

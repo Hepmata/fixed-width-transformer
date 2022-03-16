@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+
+**/*.jar
+**/target
+
 # C extensions
 *.so
 
@@ -141,3 +145,15 @@ cython_debug/
 
 .idea
 venv
+
+.serverless
+node_modules
+
+test.py
+
+**/.DS_Store
+.DS_Store
+
+qa
+uat
+prd

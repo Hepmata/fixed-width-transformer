@@ -12,4 +12,3 @@ class ValidatorConfig:
     segment: str
     field_name: str
     validators: [ValidatorFieldConfig]
-

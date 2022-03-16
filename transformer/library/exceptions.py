@@ -1,4 +1,3 @@
-
 class ConfigError(Exception):
     pass
 
@@ -7,6 +6,7 @@ class MissingConfigError(Exception):
     """
     Exception that's thrown when configuration is missing or the required segment is not found.
     """
+
     pass
 
 
@@ -14,7 +14,36 @@ class InvalidConfigError(Exception):
     """
     Exception that's thrown when a loaded yaml configuration cannot be parsed or read
     """
-    def __init__(self, msg="Failed to parse data. Please ensure config format is valid"):
+
+    def __init__(
+        self, msg='Failed to parse data. Please ensure config format is valid'
+    ):
+        super().__init__(msg)
+
+
+class FailedConstraintException(Exception):
+    segment: str
+    failCount: int
+    recordCount: int
+
+    def __init__(self, segment: str, failCount: int = 0, recordCount: int = 0, msg='Failed to execute constraint') -> None:
+        self.segment = segment
+        self.failCount = failCount
+        self.recordCount = recordCount
+        super().__init__(msg)
+
+
+class FailedConstraintsException(Exception):
+
+    errors: [FailedConstraintException]
+
+    def __init__(self, msg: str, errors: [FailedConstraintException]):
+        self.errors = errors
+        super().__init__(msg)
+
+
+class ConstraintMisconfigurationException(Exception):
+    def __init__(self, msg='Failed to execute constraint due to misconfiguration') -> None:
         super().__init__(msg)
 
 
@@ -31,12 +60,22 @@ class AppenderError(Exception):
 
 
 class ValidationError(Exception):
+    validatorName: str
     segment: str
     fieldName: str
     failCount: int
     recordCount: int
 
-    def __init__(self, msg: str, segment: str, field_name: str, fail_count: int, record_count: int) -> None:
+    def __init__(
+        self,
+        msg: str,
+        validator_name: str,
+        segment: str,
+        field_name: str,
+        fail_count: int,
+        record_count: int,
+    ) -> None:
+        self.validatorName = validator_name
         self.segment = segment
         self.fieldName = field_name
         self.failCount = fail_count
@@ -56,6 +95,7 @@ class ConversionError(Exception):
 
 class ValidationFailureError(Exception):
     """Concatenation of Validation errors"""
+
     errors: [ValidationError]
 
     def __init__(self, msg: str, errors: [ValidationError]):

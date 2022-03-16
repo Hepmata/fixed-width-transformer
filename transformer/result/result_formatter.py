@@ -1,74 +1,91 @@
+from typing import Dict, List
+
 import pandas as pd
 import transformer.result.generator as generator
 from transformer.result.result_config import ResultFormatterConfig, ResultFieldFormat
 
 
 class AbstractResultFormatter:
-    def run(self, config:dict, frames: dict[str, pd.DataFrame]): pass
+    def prepare(
+        self, config: ResultFormatterConfig, frames: Dict[str, pd.DataFrame]
+    ) -> Dict[str, pd.DataFrame]:
+        pass
+
+    def transform(self, frames: Dict[str, pd.DataFrame]) -> list:
+        pass
+
+    def run(self, config: dict, frames: Dict[str, pd.DataFrame]):
+        pass
 
 
 class DefaultArrayResultFormatter(AbstractResultFormatter):
-    def run(self, config: ResultFormatterConfig, frames: dict[str, pd.DataFrame]) -> list:
+    def prepare(
+        self, config: ResultFormatterConfig, frames: Dict[str, pd.DataFrame]
+    ) -> Dict[str, pd.DataFrame]:
         if not config.formats:
-            return self._map_default(frames)
-        else:
-            data = []
-            max_count = 0
-            for f in frames:
-                current_length = len(frames[f].index)
-                if current_length > max_count:
-                    max_count = current_length
-            for key in config.formats:
-                d = self._map_segment(config.formats[key], frames)
-                if len(d.index) == 1:
-                    # Multiple Content
-                    data.append(pd.DataFrame({
-                        key: d.to_dict('records') * max_count
-                    }))
+            return frames
+        ndf = {}
+        for segment in config.formats:
+            max_count = find_max_count(segment, config, frames)
+            segment_data = []
+            for fmt in config.formats[segment]:
+                if '.' in fmt.value:
+                    splits = fmt.value.split('.')
+                    if len(frames[splits[-2]][splits[-1]].index) < max_count:
+                        elements = []
+                        [
+                            elements.append(frames[splits[-2]][splits[-1]].values[0])
+                            for x in range(max_count)
+                        ]
+                        segment_data.append(pd.DataFrame({fmt.name: elements}))
+                    else:
+                        segment_data.append(
+                            pd.DataFrame({fmt.name: frames[splits[-2]][splits[-1]]})
+                        )
                 else:
-                    data.append(pd.DataFrame({
-                        key: d.to_dict('records')
-                    }))
-            if len(data) == 1:
-                return data[0].to_dict('records')
-            else:
-                return pd.concat(data, axis=1).to_dict('records')
+                    generated = getattr(generator, fmt.value)().run_multiple(max_count)
+                    segment_data.append(pd.DataFrame({fmt.name: generated}))
 
-    def _map_default(self, frames: dict[str, pd.DataFrame]):
-        data = []
-        max_count = 0
-        for f in frames:
-            current_length = len(frames[f].index)
-            if current_length > max_count:
-                max_count = current_length
-        for f in frames:
-            if len(frames[f].index) == 1:
-                # Multiple Content
-                data.append(pd.DataFrame({
-                    f: frames[f].to_dict('records') * max_count
-                }))
-            else:
-                data.append(pd.DataFrame({
-                    f: frames[f].to_dict('records')
-                }))
-        if len(data) == 1:
-            return data[0].to_dict('records')
+            ndf[segment] = pd.concat(segment_data, axis=1)
+        return ndf
+
+    def transform(self, frames: Dict[str, pd.DataFrame]) -> list:
+        results = []
+        max_frame_count = find_max_segment_count(frames)
+        if len(frames) == 1 and 'root' in frames.keys():
+            results = frames['root'].to_dict('records')
+            return results
         else:
-            return pd.concat(data, axis=1).to_dict('records')
+            for f in frames:
+                multiplier = (
+                    max_frame_count if len(frames[f].index) < max_frame_count else 1
+                )
+                results.append(
+                    pd.DataFrame({f: frames[f].to_dict('records') * multiplier})
+                )
+            return pd.concat(results, axis=1).to_dict('records')
 
-    def _map_segment(self, segment: list[ResultFieldFormat], frames):
-        field_frames = []
-        for field in segment:
-            if "." in field.value:
-                splits = field.value.split(".")
-                f = frames[splits[-2]][splits[-1]].to_frame()
-                f = f.rename(columns={f.columns[0]: field.name})
-                field_frames.append(f)
-            else:
-                count = len(field_frames[0].index)
-                generated_data = getattr(generator, field.value)().run_multiple(count)
-                field_frames.append(pd.DataFrame({field.name: generated_data}))
-        return pd.concat(field_frames, axis=1)
+
+def find_max_count(segment, config, frames):
+    max_count = 1
+    for fmt in config.formats[segment]:
+        if '.' in fmt.value:
+            splits = fmt.value.split('.')
+            current_count = len(frames[splits[-2]].index)
+            if current_count > max_count:
+                max_count = current_count
+
+    return max_count
+
+
+def find_max_segment_count(frames):
+    max_count = 1
+    for f in frames:
+        current_count = len(frames[f].index)
+        if current_count > max_count:
+            max_count = current_count
+    return max_count
+
 
 # class JsonArrayResultMapper(AbstractResultFormatter):
 #     """
@@ -76,7 +93,7 @@ class DefaultArrayResultFormatter(AbstractResultFormatter):
 #     """
 #     def run(self, config:ResultFormatterConfig, input_data: dict[pd.DataFrame]):
 #         return self.__list__(self.recursion(input_data, config))
-# 
+#
 #     def __list__(self, dfs):
 #         print(dfs)
 #         max_count = 1
@@ -89,11 +106,11 @@ class DefaultArrayResultFormatter(AbstractResultFormatter):
 #             else:
 #                 if count > max_count:
 #                     max_count = count
-# 
+#
 #         for df in dfs:
 #             if len(dfs[df]) < max_count:
 #                 dfs[df] = dfs[df] * max_count
-# 
+#
 #         final_result = []
 #         for itr in range(max_count):
 #             data = {}
@@ -101,7 +118,7 @@ class DefaultArrayResultFormatter(AbstractResultFormatter):
 #                 data[df] = dfs[df][itr]
 #             final_result.append(data)
 #         return final_result
-# 
+#
 #     def recursion(self, input_data, node):
 #         if isinstance(node, list):
 #             print("Deepest depth reached! Data: {}".format(node))
@@ -143,12 +160,12 @@ class DefaultArrayResultFormatter(AbstractResultFormatter):
 #                 for depth in node:
 #                     results[depth] = self.recursion(input_data, node[depth])
 #                 return results
-# 
-# 
+#
+#
 # class JsonResultMapper(AbstractResultFormatter):
 #     def run(self, config:ResultFormatterConfig, input_data: dict[pd.DataFrame]):
 #         return self.recursion(input_data, config)
-# 
+#
 #     def recursion(self, input_data, node):
 #         if isinstance(node, list):
 #             print("Deepest depth reached! Data: {}".format(node))

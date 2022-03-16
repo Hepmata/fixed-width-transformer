@@ -6,50 +6,41 @@ from unittest import mock
 class TestConsoleResultProducer:
     @pytest.fixture
     def pre_config(self):
-        return {
-            "result": {
-                "producer": {
-                    "name": "ConsoleResultProducer"
-                }
-            }
-        }
+        return {'result': {'producer': {'name': 'ConsoleResultProducer'}}}
 
     def test_array(self, pre_config, capsys):
         config = ResultProducerConfig(pre_config)
         producer = result_producer.ConsoleResultProducer(config)
-        producer.run([{"Field1": "Works"}, {"Field1": "Works as Well!"}])
+        producer.run([{'Field1': 'Works'}, {'Field1': 'Works as Well!'}])
         captured = capsys.readouterr()
         print(captured)
-        assert len(captured.out.split("\n")) == 3
+        assert len(captured.out.split('\n')) == 3
 
     def test_dict(self, pre_config, capsys):
         config = ResultProducerConfig(pre_config)
         producer = result_producer.ConsoleResultProducer(config)
-        producer.run({"Field1": "Works!"})
+        producer.run({'Field1': 'Works!'})
         captured = capsys.readouterr()
         print(captured)
-        assert len(captured.out.split("\n")) == 2
+        assert len(captured.out.split('\n')) == 2
 
     def test_str(self, pre_config, capsys):
         config = ResultProducerConfig(pre_config)
         producer = result_producer.ConsoleResultProducer(config)
-        producer.run("Simple String")
+        producer.run('Simple String')
         captured = capsys.readouterr()
         print(captured)
-        assert len(captured.out.split("\n")) == 2
+        assert len(captured.out.split('\n')) == 2
 
 
 class TestS3ResultProducer:
     @pytest.fixture
     def pre_config(self):
         return {
-            "result": {
-                "producer": {
-                    "name": "S3ResultProducer",
-                    "arguments": {
-                        "bucket": "somebucket",
-                        "key": "somekey.txt"
-                    }
+            'result': {
+                'producer': {
+                    'name': 'S3ResultProducer',
+                    'arguments': {'bucket': 'somebucket', 'key': 'somekey.txt'},
                 }
             }
         }
@@ -58,7 +49,7 @@ class TestS3ResultProducer:
         mocker.patch('transformer.library.aws_service.upload_s3_with_bytes')
         config = ResultProducerConfig(pre_config)
         producer = result_producer.S3ResultProducer(config)
-        producer.run({"Field1": "Works"})
+        producer.run({'Field1': 'Works'})
 
 
 # class TestMSKScramResultProducer:
@@ -77,7 +68,7 @@ class TestS3ResultProducer:
 #                 }
 #             }
 #         }
-#     
+#
 #     @mock.patch('transformer.library.kafka_service')
 #     @mock.patch('transformer.library.aws_service')
 #     def test_produce_results(self, kafka_service, aws_service, pre_config):

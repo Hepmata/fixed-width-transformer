@@ -2,25 +2,22 @@ from transformer.validator.validator_config import ValidatorConfig, ValidatorFie
 
 
 class TestValidatorConfig:
-
     class TestSuccess:
         def test_with_arguments(self):
-            f = ValidatorFieldConfig("test", {
-                "someargs": "somevalue"
-            })
+            f = ValidatorFieldConfig('test', {'someargs': 'somevalue'})
 
-            cfg = ValidatorConfig("test", "test", [f])
+            cfg = ValidatorConfig('test', 'test', [f])
 
             assert len(cfg.validators) == 1
             assert cfg
 
         def test_without_arguments(self):
-            f = ValidatorFieldConfig("test", {})
-            cfg = ValidatorConfig("test", "test", [f])
+            f = ValidatorFieldConfig('test', {})
+            cfg = ValidatorConfig('test', 'test', [f])
             assert len(cfg.validators) == 1
             assert cfg
 
         def test_without_validations(self):
-            cfg = ValidatorConfig("test", "test", [])
+            cfg = ValidatorConfig('test', 'test', [])
             assert len(cfg.validators) == 0
             assert cfg

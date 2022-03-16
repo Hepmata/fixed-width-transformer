@@ -3,42 +3,48 @@ import uuid
 from tests.test_helper import generate_fw_text_line, generate_file_data
 import pytest
 
-from transformer.source.source_formatter import HeaderSourceFormatter, BodySourceFormatter, FooterSourceFormatter, SourceFormatterConfig, BodyOnlySourceFormatter
+from transformer.source.source_formatter import (
+    HeaderSourceFormatter,
+    BodySourceFormatter,
+    FooterSourceFormatter,
+    SourceFormatterConfig,
+    BodyOnlySourceFormatter,
+)
 from transformer.library.exceptions import SourceFileError
 
 
 class TestHeaderSourceFormatter:
     @pytest.fixture(autouse=True)
     def file_name(self):
-        source_file_name = f"fw_file-{uuid.uuid4().__str__()}.txt"
+        source_file_name = f'fw_file-{uuid.uuid4().__str__()}.txt'
         yield source_file_name
         if os.path.exists(source_file_name):
             os.remove(source_file_name)
 
     def test_header(self, file_name):
-        values = ["val1", "val2"]
+        values = ['val1', 'val2']
         spacing = [10, 10]
         with open(file_name, 'w') as file:
             file.write(generate_fw_text_line(values, spacing))
         config = SourceFormatterConfig(
-            name="HeaderSourceFormatter",
+            name='HeaderSourceFormatter',
             segment='header',
-            names=["field1", "field2"],
+            names=['field1', 'field2'],
             specs=[(0, 10), (10, 20)],
         )
         data = HeaderSourceFormatter().run(config, file_name)
-        expected = ["val1      ", "val2      "]
+        expected = ['val1      ', 'val2      ']
         for itr in range(len(values)):
             assert data[config.names[itr]][0] == expected[itr]
 
     def test_nan(self, file_name):
         config = SourceFormatterConfig(
-            name="HeaderSourceFormatter",
+            name='HeaderSourceFormatter',
             segment='header',
-            names=["field1", "field2"],
-            specs=[(0, 10), (50, 60)]
+            names=['field1', 'field2'],
+            specs=[(0, 10), (50, 60)],
         )
-        values = ["val1", "val2"]
+        values = ['val1', 'val2']
         spacing = [10, 10]
         with open(file_name, 'w') as file:
             file.write(generate_fw_text_line(values, spacing))
@@ -49,9 +55,9 @@ class TestHeaderSourceFormatter:
 
     def test_empty_file(self, file_name):
         config = SourceFormatterConfig(
-            name="HeaderSourceFormatter",
+            name='HeaderSourceFormatter',
             segment='header',
-            names=["field1", "field2"],
+            names=['field1', 'field2'],
             specs=[(0, 10), (10, 20)],
         )
         with open(file_name, 'w') as file:
@@ -61,9 +67,9 @@ class TestHeaderSourceFormatter:
 
     def test_missing_file(self, file_name):
         config = SourceFormatterConfig(
-            name="HeaderSourceFormatter",
+            name='HeaderSourceFormatter',
             segment='header',
-            names=["field1", "field2"],
+            names=['field1', 'field2'],
             specs=[(0, 10), (10, 20)],
         )
         with pytest.raises(SourceFileError):
@@ -73,7 +79,7 @@ class TestHeaderSourceFormatter:
 class TestBodySourceFormatter:
     @pytest.fixture(autouse=True)
     def file_name(self):
-        source_file_name = f"fw_file-{uuid.uuid4().__str__()}.txt"
+        source_file_name = f'fw_file-{uuid.uuid4().__str__()}.txt'
         yield source_file_name
         if os.path.exists(source_file_name):
             os.remove(source_file_name)
@@ -92,12 +98,12 @@ class TestBodySourceFormatter:
     #         for v in values:
     #             file.write(generate_fw_text_line(v, spacing))
     #             file.write("\n")
-    # 
+    #
     #     data = BodySourceFormatter().run(config, file_name)
     #     print(data)
     #     assert not data.isnull().values.any()
     #     assert len(data.index) == 2
-    # 
+    #
     # def test_nan(self, file_name):
     #     config = SourceFormatterConfig(
     #         name="BodySourceFormatter",
@@ -112,7 +118,7 @@ class TestBodySourceFormatter:
     #         for v in values:
     #             file.write(generate_fw_text_line(v, spacing))
     #             file.write("\n")
-    # 
+    #
     #     data = BodySourceFormatter().run(config, file_name)
     #     print(data)
     #     count = data.isnull().values.sum()
@@ -120,9 +126,9 @@ class TestBodySourceFormatter:
 
     def test_empty_file(self, file_name):
         config = SourceFormatterConfig(
-            name="BodySourceFormatter",
+            name='BodySourceFormatter',
             segment='body',
-            names=["field1", "field2", "field3"],
+            names=['field1', 'field2', 'field3'],
             specs=[(0, 10), (10, 20), (50, 51)],
         )
         with open(file_name, 'w'):
@@ -132,9 +138,9 @@ class TestBodySourceFormatter:
 
     def test_missing_file(self, file_name):
         config = SourceFormatterConfig(
-            name="BodySourceFormatter",
+            name='BodySourceFormatter',
             segment='body',
-            names=["field1", "field2", "field3"],
+            names=['field1', 'field2', 'field3'],
             specs=[(0, 10), (10, 20), (50, 51)],
         )
         with pytest.raises(SourceFileError):
@@ -144,36 +150,36 @@ class TestBodySourceFormatter:
 class TestFooterSourceFormatter:
     @pytest.fixture(autouse=True)
     def file_name(self):
-        source_file_name = f"fw_file-{uuid.uuid4().__str__()}.txt"
+        source_file_name = f'fw_file-{uuid.uuid4().__str__()}.txt'
         yield source_file_name
         if os.path.exists(source_file_name):
             os.remove(source_file_name)
 
     def test_header(self, file_name):
         config = SourceFormatterConfig(
-            name="FooterSourceFormatter",
+            name='FooterSourceFormatter',
             segment='footer',
-            names=["field1", "field2"],
+            names=['field1', 'field2'],
             specs=[(0, 10), (10, 20)],
         )
-        values = ["val1", "val2"]
+        values = ['val1', 'val2']
         spacing = [10, 10]
         with open(file_name, 'w') as file:
             file.write(generate_fw_text_line(values, spacing))
 
         data = FooterSourceFormatter().run(config, file_name)
-        expected = ["val1      ", "val2      "]
+        expected = ['val1      ', 'val2      ']
         for itr in range(len(values)):
             assert data[config.names[itr]][0] == expected[itr]
 
     def test_nan(self, file_name):
         config = SourceFormatterConfig(
-            name="FooterSourceFormatter",
+            name='FooterSourceFormatter',
             segment='footer',
-            names=["field1", "field2"],
+            names=['field1', 'field2'],
             specs=[(0, 10), (50, 60)],
         )
-        values = ["val1", "val2"]
+        values = ['val1', 'val2']
         spacing = [10, 10]
         with open(file_name, 'w') as file:
             file.write(generate_fw_text_line(values, spacing))
@@ -184,9 +190,9 @@ class TestFooterSourceFormatter:
 
     def test_empty_file(self, file_name):
         config = SourceFormatterConfig(
-            name="FooterSourceFormatter",
+            name='FooterSourceFormatter',
             segment='footer',
-            names=["field1", "field2"],
+            names=['field1', 'field2'],
             specs=[(0, 10), (50, 60)],
         )
         with open(file_name, 'w') as file:
@@ -196,9 +202,9 @@ class TestFooterSourceFormatter:
 
     def test_missing_file(self, file_name):
         config = SourceFormatterConfig(
-            name="FooterSourceFormatter",
+            name='FooterSourceFormatter',
             segment='footer',
-            names=["field1", "field2"],
+            names=['field1', 'field2'],
             specs=[(0, 10), (50, 60)],
         )
         with pytest.raises(SourceFileError):
@@ -208,33 +214,33 @@ class TestFooterSourceFormatter:
 class TestBodyOnlySourceFormatter:
     @pytest.fixture(autouse=True)
     def file_name(self):
-        source_file_name = f"fw_file-{uuid.uuid4().__str__()}.txt"
+        source_file_name = f'fw_file-{uuid.uuid4().__str__()}.txt'
         yield source_file_name
         if os.path.exists(source_file_name):
             os.remove(source_file_name)
 
     def test_success(self, file_name):
         config = SourceFormatterConfig(
-            name="BodyOnlySourceFormatter",
-            segment="body",
-            names=["field1", "field2"],
+            name='BodyOnlySourceFormatter',
+            segment='body',
+            names=['field1', 'field2'],
             specs=[(0, 10), (10, 20)],
         )
         file_data = {
-            "body": {
-                "values": [["X1", "X2"], ["Y1", "Y2"], ["Z1", "Z2"]],
-                "spacing": [10, 10]
+            'body': {
+                'values': [['X1', 'X2'], ['Y1', 'Y2'], ['Z1', 'Z2']],
+                'spacing': [10, 10],
             }
         }
         generate_file_data(file_name, file_data)
         df = BodyOnlySourceFormatter().run(config, file_name)
         assert len(df.index) == len(file_data['body']['values'])
-    
+
     def test_empty_file(self, file_name):
         config = SourceFormatterConfig(
-            name="BodyOnlySourceFormatter",
+            name='BodyOnlySourceFormatter',
             segment='body',
-            names=["field1", "field2"],
+            names=['field1', 'field2'],
             specs=[(0, 10), (10, 20)],
         )
         with open(file_name, 'w'):
@@ -244,9 +250,9 @@ class TestBodyOnlySourceFormatter:
 
     def test_missing_file(self, file_name):
         config = SourceFormatterConfig(
-            name="BodySourceFormatter",
+            name='BodySourceFormatter',
             segment='body',
-            names=["field1", "field2"],
+            names=['field1', 'field2'],
             specs=[(0, 10), (10, 20)],
         )
         with pytest.raises(SourceFileError):
